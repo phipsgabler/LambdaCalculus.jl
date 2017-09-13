@@ -1,5 +1,9 @@
 module Lambdas
 
-# package code goes here
+abstract type LambdaTerm end
+
+include("named.jl")
+include("debruijn.jl")
+include("locally_named.jl")
 
 end # module
