@@ -1,7 +1,11 @@
 import Base: show
 
-export NamedTerm, NamedVar, NamedAbs,
-    freevars, substitute
+export NamedTerm,
+    NamedVar,
+    NamedApp,
+    NamedAbs,
+    freevars,
+    substitute
 
 abstract type NamedTerm <: LambdaTerm end
 
@@ -34,7 +38,7 @@ end
 
 
 freevars(t::NamedVar) = Set([t])
-freevars(t::NamedAbs) = setdiff(freevars(t.body), Set([t]))
+freevars(t::NamedAbs) = Set(v for v in freevars(t.body) if v.name != t.boundname)
 freevars(t::NamedApp) = union(freevars(t.car), freevars(t.cdr))
 
 
