@@ -19,12 +19,12 @@ struct DeBruijnVar <: DeBruijnRepr
 end
 
 struct DeBruijnAbs <: DeBruijnRepr
-    boundname::Nullable{Symbol}
+    boundname::Symbol
     body::DeBruijnRepr
 end
 
-DeBruijnAbs(body::DeBruijnRepr) = DeBruijnAbs(Nullable{Symbol}(), body)
-DeBruijnAbs(boundname::Symbol, body::DeBruijnRepr) = DeBruijnAbs(Nullable(boundname), body)
+# DeBruijnAbs(body::DeBruijnRepr) = DeBruijnAbs(Nullable{Symbol}(), body)
+# DeBruijnAbs(boundname::Symbol, body::DeBruijnRepr) = DeBruijnAbs(boundname, body)
 
 struct DeBruijnApp <: DeBruijnRepr
     car::DeBruijnRepr
@@ -40,11 +40,7 @@ end
 
 
 function Base.show(io::IO, t::DeBruijnAbs)
-    if isnull(t.boundname)
-        print(io, "(λ.", t.body, ")")
-    else
-        print(io, "(λ{", get(t.boundname), "}.", t.body, ")")
-    end
+    print(io, "(λ{", t.boundname, "}.", t.body, ")")
 end
 
 function Base.show(io::IO, t::DeBruijnApp)

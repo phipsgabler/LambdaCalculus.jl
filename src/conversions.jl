@@ -3,7 +3,8 @@ import Base: get, Callable
 export named2debruijn,
     debruijn2named,
     named2locallynameless,
-    locallynameless2named
+    locallynameless2named,
+    normalizenames
 
 @inline function get(default::Callable, x::Nullable{T}) where T
     y = default()
@@ -14,6 +15,7 @@ export named2debruijn,
         isnull(x) ? y : x.value
     end
 end
+
 
 function named2debruijn(t::NamedTerm)
     fv = [v.name for v in freevars(t)]
@@ -30,16 +32,9 @@ debruijn2named(t::DeBruijnVar, ctx::Vector{Symbol}) =
     NamedVar(ctx[t.index])
 debruijn2named(t::DeBruijnApp, ctx::Vector{Symbol}) =
     NamedApp(debruijn2named(t.car, ctx), debruijn2named(t.cdr, ctx))
-function debruijn2named(t::DeBruijnAbs, ctx::Vector{Symbol})
-    freshname = get(t.boundname) do
-        candidate = :x
-        while freshname ∈ ctx
-            freshname = Symbol(freshname, "'")
-        end
-        return freshname
-    end
-    NamedAbs(freshname, debruijn2named(t.body, [freshname; ctx]))
-end
+debruijn2named(t::DeBruijnAbs, ctx::Vector{Symbol}) =
+    NamedAbs(t.boundname, debruijn2named(t.body, [t.boundname; ctx]))
+
 
 
 function named2locallynameless(t::NamedTerm)
