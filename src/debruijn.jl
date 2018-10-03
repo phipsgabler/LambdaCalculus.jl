@@ -40,13 +40,13 @@ const DeBruijnContext = Dict{Int, Symbol}
             | λ <Term>            (abstraction)
             | (<Term> <Term>)     (application)
 
-Each De Bruijn index is a natural number that represents an occurrence of a variable in a λ-term,
+Each De Bruijn index is a natural number that represents an occurrence of a variable in a ``λ``-term,
 and denotes the number of binders that are in scope between that occurrence and its corresponding
 binder.
 
 !!! warning "Important note"
 
-    Since we are in Julia, indices start at $1$.
+    Since we are in Julia, indices start at ``1``.
 """
 struct DeBruijnTerm <: LambdaTerm
     representation::DeBruijnRepr

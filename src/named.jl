@@ -50,9 +50,9 @@ end
 
 
 
-freevars(t::Var) = Set([t])
-freevars(t::Abs) = Set(v for v in freevars(t.body) if v.name != t.boundname)
-freevars(t::App) = union(freevars(t.car), freevars(t.cdr))
+freevars(t::Var) = Set([t.name])
+freevars(t::Abs) = filter(!isequal(t.boundname), freevars(t.body))
+freevars(t::App) = freevars(t.car) ∪ freevars(t.cdr)
 
 """
     freevars(t::Term) -> Set
@@ -85,24 +85,20 @@ function substitute(name::Symbol, s::Term, t::Abs)
         if name ∉ fv
             return Abs(t.boundname, substitute(name, s, t.body))
         else
-            freshname = name * "′"
-            while freshname ∈ fv
-                freshname *= "′"
-            end
-
-            renamed_body = substitute(name, Var(freshname), t.body)
-            return Abs(t.boundname, renamed_body)
+            freshvar = Var(freshname(addprime(name), fv))
+            t′ = Abs(freshvar.name, substitute(name, freshvar, t.body))
+            return substitute(name, s, t′)
         end
     end
 end
-
 
 """
     substitute(x::Symbol, s::Term, t::Term) -> Term
 
 Capture-avoiding substitution of `x` in `t` by `s`, commonly written like `t[x -> s]`.  Will
-generate fresh names in `s`, if required.
+rename bound variables, if required.
 """
 substitute
 
-end # Named
+
+end # module Named
