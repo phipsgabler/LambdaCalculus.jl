@@ -1,6 +1,6 @@
 module Named
 
-import Base: show
+import Base: show, getindex
 
 using ..Lambdas
 
@@ -100,5 +100,7 @@ rename bound variables, if required.
 """
 substitute
 
+
+getindex(t::Term, subst::Pair{Symbol, <:Term}) = substitute(subst[1], subst[2], t)
 
 end # module Named
