@@ -26,13 +26,13 @@ struct LocallyNamelessFVar <: LocallyNamelessRepr
 end
 
 struct LocallyNamelessAbs <: LocallyNamelessRepr
-    boundname::Nullable{Symbol}
+    boundname::Union{Symbol, Nothing}
     body::LocallyNamelessRepr
 end
 
 LocallyNamelessAbs(body::LocallyNamelessRepr) = LocallyNamelessAbs(Nullable{Symbol}(), body)
 LocallyNamelessAbs(boundname::Symbol, body::LocallyNamelessRepr) =
-    LocallyNamelessAbs(Nullable(boundname), body)
+    LocallyNamelessAbs(boundname, body)
 
 struct LocallyNamelessApp <: LocallyNamelessRepr
     car::LocallyNamelessRepr
@@ -47,7 +47,7 @@ struct LocallyNamelessTerm <: LambdaTerm
 end
 
 
-function Base.show(io::IO, t::LocallyNamelessAbs)
+function show(io::IO, t::LocallyNamelessAbs)
     if isnull(t.boundname)
         print(io, "(λ.", t.body, ")")
     else
@@ -55,15 +55,15 @@ function Base.show(io::IO, t::LocallyNamelessAbs)
     end
 end
 
-function Base.show(io::IO, t::LocallyNamelessApp)
+function show(io::IO, t::LocallyNamelessApp)
     print(io, "(", t.car, " ", t.cdr, ")")
 end
 
-function Base.show(io::IO, t::LocallyNamelessFVar)
+function show(io::IO, t::LocallyNamelessFVar)
     print(io, t.name)
 end
 
-function Base.show(io::IO, t::LocallyNamelessBVar)
+function show(io::IO, t::LocallyNamelessBVar)
     print(io, t.index)
 end
 

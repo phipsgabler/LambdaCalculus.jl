@@ -1,12 +1,14 @@
 module Lambdas
 
-abstract type LambdaTerm end
+abstract type AbstractTerm end
+export AbstractTerm
 
 include("named.jl")
-include("debruijn.jl")
-include("locally_nameless.jl")
-include("conversions.jl")
 
+
+# include("debruijn.jl")
+# include("locally_nameless.jl")
+# include("conversions.jl")
 
 
 end # module

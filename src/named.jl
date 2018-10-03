@@ -1,48 +1,69 @@
+module Named
+
 import Base: show
 
-export NamedTerm,
-    NamedVar,
-    NamedApp,
-    NamedAbs,
+using ..Lambdas
+
+export Term,
+    Var,
+    App,
+    Abs,
     freevars,
     substitute
 
-abstract type NamedTerm <: LambdaTerm end
 
-struct NamedVar <: NamedTerm
+"""Named lambda terms, built using only the following rule: 
+
+    <Term> := <Name>              (variable)
+            | λ <Name> . <Term>   (abstraction)
+            | (<Term> <Term>)     (application)
+
+"""
+abstract type Term <: AbstractTerm end
+
+struct Var <: Term
     name::Symbol
 end
 
-struct NamedAbs <: NamedTerm
+struct Abs <: Term
     boundname::Symbol
-    body::NamedTerm
+    body::Term
 end
 
-struct NamedApp <: NamedTerm
-    car::NamedTerm
-    cdr::NamedTerm
+struct App <: Term
+    car::Term
+    cdr::Term
 end
 
 
-function Base.show(io::IO, t::NamedAbs)
+function show(io::IO, t::Abs)
     print(io, "(λ", t.boundname, ".", t.body, ")")
 end
 
-function Base.show(io::IO, t::NamedApp)
+function show(io::IO, t::App)
     print(io, "(", t.car, " ", t.cdr, ")")
 end
 
-function Base.show(io::IO, t::NamedVar)
+function show(io::IO, t::Var)
     print(io, t.name)
 end
 
 
-freevars(t::NamedVar) = Set([t])
-freevars(t::NamedAbs) = Set(v for v in freevars(t.body) if v.name != t.boundname)
-freevars(t::NamedApp) = union(freevars(t.car), freevars(t.cdr))
+
+freevars(t::Var) = Set([t])
+freevars(t::Abs) = Set(v for v in freevars(t.body) if v.name != t.boundname)
+freevars(t::App) = union(freevars(t.car), freevars(t.cdr))
+
+"""
+    freevars(t::Term) -> Set
+
+Calculate the set of free variables in `t`.
+"""
+freevars
 
 
-function substitute(name::Symbol, s::NamedTerm, t::NamedVar)
+
+function substitute(name::Symbol, s::Term, t::Var)
     if name == t.name
         return s
     else
@@ -50,28 +71,38 @@ function substitute(name::Symbol, s::NamedTerm, t::NamedVar)
     end
 end
 
-function substitute(name::Symbol, s::NamedTerm, t::NamedApp)
-    return NamedApp(substitute(name, s, t.car),
-                    substitute(name, s, t.cdr))
+function substitute(name::Symbol, s::Term, t::App)
+    return App(substitute(name, s, t.car),
+               substitute(name, s, t.cdr))
 end
 
-function substitute(name::Symbol, s::NamedTerm, t::NamedAbs)
+function substitute(name::Symbol, s::Term, t::Abs)
     if name == t.boundname
         return t
     else
         fv = freevars(t.body)
         
         if name ∉ fv
-            return NamedAbs(t.boundname, substitute(name, s, t.body))
+            return Abs(t.boundname, substitute(name, s, t.body))
         else
-            freshname = name * "'"
+            freshname = name * "′"
             while freshname ∈ fv
-                freshname *= "'"
+                freshname *= "′"
             end
 
-            renamed_body = substitute(name, NamedVar(freshname), t.body)
-            return NamedAbs(t.boundname, renamed_body)
+            renamed_body = substitute(name, Var(freshname), t.body)
+            return Abs(t.boundname, renamed_body)
         end
     end
 end
 
+
+"""
+    substitute(x::Symbol, s::Term, t::Term) -> Term
+
+Capture-avoiding substitution of `x` in `t` by `s`, commonly written like `t[x -> s]`.  Will
+generate fresh names in `s`, if required.
+"""
+substitute
+
+end # Named

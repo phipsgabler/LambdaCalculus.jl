@@ -33,21 +33,36 @@ end
 
 const DeBruijnContext = Dict{Int, Symbol}
 
+
+"""Lambda terms using [De Bruijn indexing](De Bruijn indexing), built using only the following rule:
+
+    <Term> := <Number>            (variable)
+            | λ <Term>            (abstraction)
+            | (<Term> <Term>)     (application)
+
+Each De Bruijn index is a natural number that represents an occurrence of a variable in a λ-term,
+and denotes the number of binders that are in scope between that occurrence and its corresponding
+binder.
+
+!!! warning "Important note"
+
+    Since we are in Julia, indices start at $1$.
+"""
 struct DeBruijnTerm <: LambdaTerm
     representation::DeBruijnRepr
     context::DeBruijnContext
 end
 
 
-function Base.show(io::IO, t::DeBruijnAbs)
+function show(io::IO, t::DeBruijnAbs)
     print(io, "(λ{", t.boundname, "}.", t.body, ")")
 end
 
-function Base.show(io::IO, t::DeBruijnApp)
+function show(io::IO, t::DeBruijnApp)
     print(io, "(", t.car, " ", t.cdr, ")")
 end
 
-function Base.show(io::IO, t::DeBruijnVar)
+function show(io::IO, t::DeBruijnVar)
     print(io, t.index)
 end
 
@@ -70,6 +85,5 @@ substitute(i::DeBruijnIndex, s::DeBruijnRepr, t::DeBruijnVar) = (t.index == i) ?
 substitute(i::DeBruijnIndex, s::DeBruijnRepr, t::DeBruijnApp) =
     DeBruijnApp(substitute(i, s, t.car), substitute(i, s, t.cdr))
 substitute(i::DeBruijnIndex, s::DeBruijnRepr, t::DeBruijnAbs) =
-    DeBruijnAbs(t.boundname,
-                substitute(i + 1, shift(1, s), t.body))
+    DeBruijnAbs(t.boundname, substitute(i + 1, shift(1, s), t.body))
 
