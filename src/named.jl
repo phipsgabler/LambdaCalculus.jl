@@ -3,6 +3,7 @@ module Named
 import Base: convert, getindex, show
 
 using ..Lambdas
+import ..Lambdas: freevars
 
 export Term,
     Var,
@@ -34,6 +35,10 @@ end
 struct App <: Term
     car::Term
     cdr::Term
+end
+
+struct Escape <: Term
+    expr::Union{Expr, Symbol}
 end
 
 
@@ -122,7 +127,7 @@ function convert(::Type{Term}, expr::Expr)
     elseif expr.head == :->
         convert(Abs, expr)
     elseif expr.head == :$ && length(expr.args) == 1
-        esc(expr.args[1])
+        Escape(expr.args[1])
     elseif expr.head == :block
         # Such trivial blocks are used by the parser in lambdas to add metadata.
         # They consist of a LineNumberNode followed by the actual expression.
@@ -136,10 +141,12 @@ end
 convert(::Type{Expr}, v::Var) = :($(v.name))
 convert(::Type{Expr}, t::Abs) = :($(t.boundname) -> $(convert(Expr, t.body)))
 convert(::Type{Expr}, t::App) = :(($(convert(Expr, t.car))($(convert(Expr, t.cdr)))))
+convert(::Type{Expr}, t::Escape) = esc(t.expr)
 
 reify(v::Var) = :(Var($(Meta.quot(v.name))))
 reify(t::Abs) = :(Abs($(Meta.quot(t.boundname)), $(reify(t.body))))
 reify(t::App) = :(App($(reify(t.car)), $(reify(t.cdr))))
+reify(t::Escape) = esc(t.expr)
 
 """
     reify(t::Term) -> Expr
@@ -152,6 +159,11 @@ reify
 "Convert a (well-formed) Julia expression to a `Term`."
 macro lambda(expr)
     return reify(convert(Term, expr))
+end
+
+"Convert a (well-formed) Julia expression to a `Term`."
+macro λ(expr)
+    return :(@lambda $expr)
 end
 
 
