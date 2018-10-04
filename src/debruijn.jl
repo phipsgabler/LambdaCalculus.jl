@@ -49,26 +49,10 @@ struct App <: Term
 end
 
 
-# const Context = Dict{Int, Symbol}
+show(io::IO, t::Abs) = print(io, "(λ", ".", t.body, ")")
+show(io::IO, t::App) = print(io, "(", t.car, " ", t.cdr, ")")
+show(io::IO, t::Var) = print(io, t.index)
 
-# struct TermAndContext
-#     representation::Term
-#     context::Context
-# end
-
-
-
-function show(io::IO, t::Abs)
-    print(io, "(λ", ".", t.body, ")")
-end
-
-function show(io::IO, t::App)
-    print(io, "(", t.car, " ", t.cdr, ")")
-end
-
-function show(io::IO, t::Var)
-    print(io, t.index)
-end
 
 
 """
@@ -135,4 +119,4 @@ macro λ(expr)
     return :(@lambda $expr)
 end
 
-end # module 
+end # module DeBruijn
