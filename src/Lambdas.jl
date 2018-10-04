@@ -17,19 +17,22 @@ function freshname(name, fv)
     return freshname
 end
 
+function freevars end
+
 
 export AbstractTerm,
     freshname,
-    addprime
+    addprime,
+    freevars
 
 
 include("named.jl")
 
-
 include("debruijn.jl")
 
 # include("locally_nameless.jl")
-# include("conversions.jl")
+
+include("conversions.jl")
 
 
 end # module
