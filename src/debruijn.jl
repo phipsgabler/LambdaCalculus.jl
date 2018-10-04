@@ -1,37 +1,20 @@
-import Base: show
+module DeBruijn
 
-export DeBruijnRepr,
-    DeBruijnVar,
-    DeBruijnApp,
-    DeBruijnAbs,
+import Base: show, getindex
+
+using ..Lambdas
+import ..Lambdas: freevars
+
+export Term,
+    Var,
+    App,
+    Abs,
     freevars,
     shift,
     substitute
 
-const DeBruijnIndex = Int
 
-abstract type DeBruijnRepr end
-
-struct DeBruijnVar <: DeBruijnRepr
-    index::DeBruijnIndex
-
-    DeBruijnVar(index) = index > 0 ? new(index) : error("index must be greater than 0")
-end
-
-struct DeBruijnAbs <: DeBruijnRepr
-    boundname::Symbol
-    body::DeBruijnRepr
-end
-
-# DeBruijnAbs(body::DeBruijnRepr) = DeBruijnAbs(Nullable{Symbol}(), body)
-# DeBruijnAbs(boundname::Symbol, body::DeBruijnRepr) = DeBruijnAbs(boundname, body)
-
-struct DeBruijnApp <: DeBruijnRepr
-    car::DeBruijnRepr
-    cdr::DeBruijnRepr
-end
-
-const DeBruijnContext = Dict{Int, Symbol}
+const Index = Int
 
 
 """Lambda terms using [De Bruijn indexing](De Bruijn indexing), built using only the following rule:
@@ -48,42 +31,108 @@ binder.
 
     Since we are in Julia, indices start at ``1``.
 """
-struct DeBruijnTerm <: LambdaTerm
-    representation::DeBruijnRepr
-    context::DeBruijnContext
+abstract type Term <: AbstractTerm end
+
+struct Var <: Term
+    index::Index
+
+    Var(index) = index ≥ 1 ? new(index) : error("index must be at least 1")
+end
+
+struct Abs <: Term
+    body::Term
+end
+
+struct App <: Term
+    car::Term
+    cdr::Term
 end
 
 
-function show(io::IO, t::DeBruijnAbs)
-    print(io, "(λ{", t.boundname, "}.", t.body, ")")
+# const Context = Dict{Int, Symbol}
+
+# struct TermAndContext
+#     representation::Term
+#     context::Context
+# end
+
+
+
+function show(io::IO, t::Abs)
+    print(io, "(λ", ".", t.body, ")")
 end
 
-function show(io::IO, t::DeBruijnApp)
+function show(io::IO, t::App)
     print(io, "(", t.car, " ", t.cdr, ")")
 end
 
-function show(io::IO, t::DeBruijnVar)
+function show(io::IO, t::Var)
     print(io, t.index)
 end
 
 
-freevars(t::DeBruijnRepr) = freevars_at(0, t)
-freevars_at(level::Int, t::DeBruijnVar) = t.index > level ? Set([t]) : Set{DeBruijnVar}()
-freevars_at(level::Int, t::DeBruijnAbs) = setdiff(freevars_at(level + 1, t.body), Set([t]))
-freevars_at(level::Int, t::DeBruijnApp) = union(freevars_at(level, t.car), freevars_at(level, t.cdr))
+"""
+    freevars(t::Term) -> Set
+
+Calculate the set of free variables in `t`.
+"""
+freevars(t::Term) = freevars_at(0, t)
+freevars_at(level::Int, t::Var) = t.index > level ? Set([t.index]) : Set{Index}()
+freevars_at(level::Int, t::Abs) = setdiff(freevars_at(level + 1, t.body), Set([t.index]))
+freevars_at(level::Int, t::App) = freevars_at(level, t.car) ∪ freevars_at(level, t.cdr)
 
 
-shift(c::DeBruijnIndex, d::DeBruijnIndex, t::DeBruijnVar) =
-    (t.index < c) ? t : DeBruijnVar(t.index + d)
-shift(c::DeBruijnIndex, d::DeBruijnIndex, t::DeBruijnAbs) =
-    DeBruijnAbs(t.boundname, shift(c + 1, d, t.body))
-shift(c::DeBruijnIndex, d::DeBruijnIndex, t::DeBruijnApp) =
-    DeBruijnApp(shift(c, d, t.car), shift(c, d, t.cdr))
-shift(d::DeBruijnIndex, t::DeBruijnRepr) = shift(1, d, t)
+shift(c::Index, d::Index, t::Var) = (t.index < c) ? t : Var(t.index + d)
+shift(c::Index, d::Index, t::Abs) = Abs(t.boundname, shift(c + 1, d, t.body))
+shift(c::Index, d::Index, t::App) = App(shift(c, d, t.car), shift(c, d, t.cdr))
 
-substitute(i::DeBruijnIndex, s::DeBruijnRepr, t::DeBruijnVar) = (t.index == i) ? s : t
-substitute(i::DeBruijnIndex, s::DeBruijnRepr, t::DeBruijnApp) =
-    DeBruijnApp(substitute(i, s, t.car), substitute(i, s, t.cdr))
-substitute(i::DeBruijnIndex, s::DeBruijnRepr, t::DeBruijnAbs) =
-    DeBruijnAbs(t.boundname, substitute(i + 1, shift(1, s), t.body))
+"""
+    shift(c, d, term) -> Term
+Increase indices of free variables in `term`, which are at least as big as `c`, by `d`.
+"""
+shift
 
+"""
+    shift(d, term) -> Term
+Increase indices of free variables in `term` by `d`.
+"""
+shift(d::Index, t::Term) = shift(1, d, t)
+
+substitute(i::Index, s::Term, t::Var) = (t.index == i) ? s : t
+substitute(i::Index, s::Term, t::App) = App(substitute(i, s, t.car), substitute(i, s, t.cdr))
+substitute(i::Index, s::Term, t::Abs) = Abs(t.boundname, substitute(i + 1, shift(1, s), t.body))
+
+"""
+    substitute(i::Index, s::Term, t::Term) -> Term
+
+Substitution of `i` in `t` by `s`, commonly written like `t[x -> s]`.
+"""
+substitute
+
+
+getindex(t::Term, subst::Pair{Index, <:Term}) = substitute(subst[1], subst[2], t)
+
+
+reify(v::Var) = :(Var($(v.index)))
+reify(t::Abs) = :(Abs($(reify(t.body))))
+reify(t::App) = :(App($(reify(t.car)), $(reify(t.cdr))))
+
+"""
+    reify(t::Term) -> Expr
+
+Construct an expression which, when evaluated, returns `t`.
+"""
+reify
+
+
+"Convert a (well-formed) Julia expression to a `Term`."
+macro lambda(expr)
+    return reify(convert(Term, convert(N.Term, expr)))
+end
+
+"Convert a (well-formed) Julia expression to a `Term`."
+macro λ(expr)
+    return :(@lambda $expr)
+end
+
+end # module 
