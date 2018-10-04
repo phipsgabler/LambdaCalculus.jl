@@ -42,18 +42,10 @@ struct Escape <: Term
 end
 
 
-function show(io::IO, t::Abs)
-    print(io, "(λ", t.boundname, ".", t.body, ")")
-end
-
-function show(io::IO, t::App)
-    print(io, "(", t.car, " ", t.cdr, ")")
-end
-
-function show(io::IO, t::Var)
-    print(io, t.name)
-end
-
+show(io::IO, t::Abs) = print(io, "(λ", t.boundname, ".", t.body, ")")
+show(io::IO, t::App) =  print(io, "(", t.car, " ", t.cdr, ")")
+show(io::IO, t::Var) = print(io, t.name)
+show(io::IO, t::Escape) = print(io, "\$(", t.expr, ")")
 
 
 freevars(t::Var) = Set([t.name])
@@ -146,7 +138,7 @@ convert(::Type{Expr}, t::Escape) = esc(t.expr)
 reify(v::Var) = :(Var($(Meta.quot(v.name))))
 reify(t::Abs) = :(Abs($(Meta.quot(t.boundname)), $(reify(t.body))))
 reify(t::App) = :(App($(reify(t.car)), $(reify(t.cdr))))
-reify(t::Escape) = esc(t.expr)
+reify(t::Escape) = :(Escape($(esc(t.expr))))
 
 """
     reify(t::Term) -> Expr
