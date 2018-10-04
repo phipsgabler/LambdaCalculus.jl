@@ -22,10 +22,12 @@ export AbstractTerm,
     freshname,
     addprime
 
+
 include("named.jl")
 
 
-# include("debruijn.jl")
+include("debruijn.jl")
+
 # include("locally_nameless.jl")
 # include("conversions.jl")
 
