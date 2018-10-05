@@ -1,5 +1,11 @@
 module Lambdas
 
+export AbstractTerm,
+    freshname,
+    addprime,
+    freevars
+
+
 abstract type AbstractTerm end
 
 addprime(s::String, n = 1) = string(s, "′" ^ n)
@@ -20,19 +26,13 @@ end
 function freevars end
 
 
-export AbstractTerm,
-    freshname,
-    addprime,
-    freevars
-
-
 include("named.jl")
-
 include("debruijn.jl")
-
 # include("locally_nameless.jl")
 
 include("conversions.jl")
+include("meta.jl")
+include("common_functions.jl")
 
 
 end # module

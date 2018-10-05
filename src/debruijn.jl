@@ -109,14 +109,4 @@ Construct an expression which, when evaluated, returns `t`.
 reify
 
 
-"Convert a (well-formed) Julia expression to a `Term`."
-macro lambda(expr)
-    return reify(convert(Term, convert(N.Term, expr)))
-end
-
-"Convert a (well-formed) Julia expression to a `Term`."
-macro λ(expr)
-    return :(@lambda $expr)
-end
-
 end # module DeBruijn

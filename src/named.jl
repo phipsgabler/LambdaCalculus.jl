@@ -10,8 +10,7 @@ export Term,
     App,
     Abs,
     freevars,
-    substitute,
-    @lambda
+    substitute
 
 
 """Named lambda terms, built using only the following rule: 
@@ -147,16 +146,6 @@ Construct an expression which, when evaluated, returns `t`.
 """
 reify
 
-
-"Convert a (well-formed) Julia expression to a `Term`."
-macro lambda(expr)
-    return reify(convert(Term, expr))
-end
-
-"Convert a (well-formed) Julia expression to a `Term`."
-macro λ(expr)
-    return :(@lambda $expr)
-end
 
 
 end # module Named
