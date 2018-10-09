@@ -23,7 +23,21 @@ function freshname(name, fv)
     return freshname
 end
 
+
+"""
+    freevars(t::Term) -> Set
+
+Calculate the set of free variables in `t`.
+"""
 function freevars end
+
+
+"""
+    reify(t::Term) -> Expr
+
+Construct an expression which, when evaluated, returns `t`.
+"""
+function reify end
 
 
 include("named.jl")

@@ -3,7 +3,7 @@ module Named
 import Base: convert, getindex, show
 
 using ..Lambdas
-import ..Lambdas: freevars
+import ..Lambdas: freevars, reify
 
 export Term,
     Var,
@@ -50,13 +50,6 @@ show(io::IO, t::Escape) = print(io, "\$(", t.expr, ")")
 freevars(t::Var) = Set([t.name])
 freevars(t::Abs) = filter(!isequal(t.boundname), freevars(t.body))
 freevars(t::App) = freevars(t.car) ∪ freevars(t.cdr)
-
-"""
-    freevars(t::Term) -> Set
-
-Calculate the set of free variables in `t`.
-"""
-freevars
 
 
 
@@ -138,13 +131,6 @@ reify(v::Var) = :(Var($(Meta.quot(v.name))))
 reify(t::Abs) = :(Abs($(Meta.quot(t.boundname)), $(reify(t.body))))
 reify(t::App) = :(App($(reify(t.car)), $(reify(t.cdr))))
 reify(t::Escape) = :(Escape($(esc(t.expr))))
-
-"""
-    reify(t::Term) -> Expr
-
-Construct an expression which, when evaluated, returns `t`.
-"""
-reify
 
 
 

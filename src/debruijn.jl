@@ -3,7 +3,7 @@ module DeBruijn
 import Base: show, getindex
 
 using ..Lambdas
-import ..Lambdas: freevars
+import ..Lambdas: freevars, reify
 
 export Term,
     Var,
@@ -54,12 +54,6 @@ show(io::IO, t::App) = print(io, "(", t.car, " ", t.cdr, ")")
 show(io::IO, t::Var) = print(io, t.index)
 
 
-
-"""
-    freevars(t::Term) -> Set
-
-Calculate the set of free variables in `t`.
-"""
 freevars(t::Term) = freevars_at(0, t)
 freevars_at(level::Int, t::Var) = t.index > level ? Set([t.index]) : Set{Index}()
 freevars_at(level::Int, t::Abs) = setdiff(freevars_at(level + 1, t.body), Set([t.index]))
@@ -100,13 +94,6 @@ getindex(t::Term, subst::Pair{Index, <:Term}) = substitute(subst[1], subst[2], t
 reify(v::Var) = :(Var($(v.index)))
 reify(t::Abs) = :(Abs($(reify(t.body))))
 reify(t::App) = :(App($(reify(t.car)), $(reify(t.cdr))))
-
-"""
-    reify(t::Term) -> Expr
-
-Construct an expression which, when evaluated, returns `t`.
-"""
-reify
 
 
 end # module DeBruijn
