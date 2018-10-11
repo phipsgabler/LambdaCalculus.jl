@@ -1,15 +1,14 @@
 module DeBruijn
 
-import Base: show, getindex
+import Base: show
 
 using ..Lambdas
-import ..Lambdas: freevars, reify
+import ..Lambdas: freevars, reify, substitute, vartype
 
 export Term,
     Var,
     App,
     Abs,
-    freevars,
     shift,
     substitute
 
@@ -80,20 +79,11 @@ substitute(i::Index, s::Term, t::Var) = (t.index == i) ? s : t
 substitute(i::Index, s::Term, t::App) = App(substitute(i, s, t.car), substitute(i, s, t.cdr))
 substitute(i::Index, s::Term, t::Abs) = Abs(t.boundname, substitute(i + 1, shift(1, s), t.body))
 
-"""
-    substitute(i::Index, s::Term, t::Term) -> Term
-
-Substitution of `i` in `t` by `s`, commonly written like `t[x -> s]`.
-"""
-substitute
-
-
-getindex(t::Term, subst::Pair{Index, <:Term}) = substitute(subst[1], subst[2], t)
-
-
 reify(v::Var) = :(Var($(v.index)))
 reify(t::Abs) = :(Abs($(reify(t.body))))
 reify(t::App) = :(App($(reify(t.car)), $(reify(t.cdr))))
 
+vartype(::Type{<:Term}) = Var
+vartype(::Term) = Var
 
 end # module DeBruijn
