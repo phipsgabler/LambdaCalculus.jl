@@ -29,7 +29,6 @@ Log.global_logger(Log.SimpleLogger(stderr, Log.Debug))
         @test freevars(D.@λ x -> y) == Set([2])
         @test (D.@λ x) ≃ (D.@lambda y)
     end
-
     
     # testcode = @rawquote begin
     #     id = @λ x -> x
@@ -55,3 +54,33 @@ Log.global_logger(Log.SimpleLogger(stderr, Log.Debug))
 
     # end
 end
+
+@testset "Conversion" begin
+    varnames = [:x, :y, :z]
+    
+    named_lambdas = [(N.@lambda x -> x),
+                     (N.@lambda (x -> x(x))(x -> x(x))),
+                     (N.@lambda x -> y -> x),
+                     (N.@lambda x -> y)]
+
+    debruijn_lambdas = [(D.@lambda x -> x),
+                        (D.@lambda (x -> x(x))(x -> x(x))),
+                        (D.@lambda x -> y -> x),
+                        (D.@lambda x -> y)]
+    
+    for t in named_lambdas
+        @test convert(N.Term, convert(D.Term, t), varnames) ≃ t
+        # @test convert(N.Term, convert(D.Term, t), [:x, :y, :z]) == t
+    end
+
+    for t in debruijn_lambdas
+        @test convert(D.Term, convert(N.Term, t, varnames)) ≃ t
+        # @test convert(D.Term, convert(N.Term, t, [:x, :y, :z])) == t
+    end
+
+    # for (tn, tx) in zip(named_lambdas, debruijn_lambdas)
+    #     @test convert(D.Term, tn) ≃ tx
+    #     @test convert(N.Term, tx, varnames) ≃ tn
+    # end
+end
+
