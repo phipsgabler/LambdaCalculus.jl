@@ -4,9 +4,8 @@ export AbstractTerm,
     addprime,
     freevars,
     freshname,
-    substitute,
     reify,
-    vartype
+    substitute
 
 
 abstract type AbstractTerm end

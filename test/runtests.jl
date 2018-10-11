@@ -8,11 +8,6 @@ const Log = Base.CoreLogging
 
 Log.global_logger(Log.SimpleLogger(stderr, Log.Debug))
 
-# macro rawquote(expr)
-#     esc(QuoteNode(expr))
-# end
-
-
 
 # MACROS
 # @testset "Macros" begin

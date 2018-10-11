@@ -9,7 +9,8 @@ export Term,
     Var,
     App,
     Abs,
-    shift,
+    freevars,
+    reify,
     substitute
 
 

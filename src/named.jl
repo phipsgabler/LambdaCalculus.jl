@@ -9,6 +9,8 @@ export Term,
     Var,
     App,
     Abs,
+    freevars,
+    reify,
     substitute
 
 
@@ -35,15 +37,10 @@ struct App <: Term
     cdr::Term
 end
 
-# struct Escape <: Term
-#     expr::Union{Expr, Symbol}
-# end
-
 
 show(io::IO, t::Abs) = print(io, "(λ", t.boundname, ".", t.body, ")")
 show(io::IO, t::App) =  print(io, "(", t.car, " ", t.cdr, ")")
 show(io::IO, t::Var) = print(io, t.name)
-# show(io::IO, t::Escape) = print(io, "\$(", t.expr, ")")
 
 
 freevars(t::Var) = Set([t.name])
@@ -99,8 +96,6 @@ function convert(::Type{Term}, expr::Expr)
         convert(App, expr)
     elseif expr.head == :->
         convert(Abs, expr)
-    # elseif expr.head == :$ && length(expr.args) == 1
-    #     Escape(expr.args[1])
     elseif expr.head == :block
         # Such trivial blocks are used by the parser in lambdas to add metadata.
         # They consist of a LineNumberNode followed by the actual expression.
@@ -114,12 +109,10 @@ end
 convert(::Type{Expr}, v::Var) = :($(v.name))
 convert(::Type{Expr}, t::Abs) = :($(t.boundname) -> $(convert(Expr, t.body)))
 convert(::Type{Expr}, t::App) = :(($(convert(Expr, t.car))($(convert(Expr, t.cdr)))))
-# convert(::Type{Expr}, t::Escape) = esc(t.expr)
 
 reify(v::Var) = :(Var($(Meta.quot(v.name))))
 reify(t::Abs) = :(Abs($(Meta.quot(t.boundname)), $(reify(t.body))))
 reify(t::App) = :(App($(reify(t.car)), $(reify(t.cdr))))
-# reify(t::Escape) = :(Escape($(esc(t.expr))))
 
 vartype(::Type{<:Term}) = Var
 vartype(::Term) = Var
