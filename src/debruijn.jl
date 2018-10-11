@@ -56,7 +56,7 @@ show(io::IO, t::Var) = print(io, t.index)
 
 freevars(t::Term) = freevars_at(0, t)
 freevars_at(level::Int, t::Var) = t.index > level ? Set([t.index]) : Set{Index}()
-freevars_at(level::Int, t::Abs) = setdiff(freevars_at(level + 1, t.body), Set([t.index]))
+freevars_at(level::Int, t::Abs) = setdiff(freevars_at(level + 1, t.body), Set([t]))
 freevars_at(level::Int, t::App) = freevars_at(level, t.car) ∪ freevars_at(level, t.cdr)
 
 
