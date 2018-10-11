@@ -10,19 +10,24 @@ Log.global_logger(Log.SimpleLogger(stderr, Log.Debug))
 
 
 # MACROS
-# @testset "Macros" begin
+@testset "Macros" begin
     @testset "Named" begin
         id = N.@λ x -> x
         l = N.@λ $id(a)
         r = N.@λ (y -> y)(a)
         @test l ≃ r
-    # end
+
+        @test freevars(N.@λ x -> y) == Set([:y])
+    end
 
     @testset "DeBruijn" begin
         id = D.@λ x -> x
         l = D.@λ (x -> x)(a)
         r = D.@λ (y -> y)(a)
         @test l ≃ r
+
+        @test freevars(D.@λ x -> y) == Set([2])
+        @test (D.@λ x) ≃ (D.@lambda y)
     end
 
     
