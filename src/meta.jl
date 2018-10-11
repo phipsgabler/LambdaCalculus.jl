@@ -6,8 +6,6 @@ __precompile__(false)
 
 
 @eval Named begin
-    macroconvert(name::Symbol) = :(Var($(Meta.quot(name))))
-    
     function macroconvert(expr::Expr)
         if expr.head == :call
             # TODO: handle :* case
@@ -23,11 +21,14 @@ __precompile__(false)
             # They consist of a LineNumberNode followed by the actual expression.
             macroconvert(expr.args[end])
         else
-            @error "unhandled syntax: $expr"
+            error("unhandled syntax: $expr")
         end
     end
 
-    
+    macroconvert(name::Symbol) = :(Var($(Meta.quot(name))))
+    macroconvert(other) = error("unhandled literal: $other")
+
+
     "Convert a (well-formed) Julia expression to a `Term`."
     macro lambda(expr)
         macroconvert(expr)
@@ -35,7 +36,7 @@ __precompile__(false)
 
     "Convert a (well-formed) Julia expression to a `Term`."
     macro λ(expr)
-        return macroconvert(expr)
+        macroconvert(expr)
     end
 
     export @lambda, @λ
@@ -47,12 +48,12 @@ end
     
     "Convert a (well-formed) Julia expression to a `Term`."
     macro lambda(expr)
-        return :(convert(Term, Named.@lambda($expr)))
+        :(convert(Term, Named.@lambda($expr)))
     end
 
     "Convert a (well-formed) Julia expression to a `Term`."
     macro λ(expr)
-        return :(@lambda $expr)
+        :(convert(Term, Named.@lambda($expr)))
     end
 
     export @lambda, @λ
