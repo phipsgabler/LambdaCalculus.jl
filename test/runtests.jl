@@ -1,9 +1,9 @@
-using Lambdas
+using LambdaCalculus
 using Test
 
 
-const N = Lambdas.Named
-const D = Lambdas.DeBruijn
+const N = LambdaCalculus.Named
+const D = LambdaCalculus.DeBruijn
 const Log = Base.CoreLogging
 
 Log.global_logger(Log.SimpleLogger(stderr, Log.Debug))

@@ -44,7 +44,7 @@ end
 
 
 @eval DeBruijn begin
-    import ..Lambdas.Named
+    import ..LambdaCalculus.Named
     
     "Convert a (well-formed) Julia expression to a `Term`."
     macro lambda(expr)

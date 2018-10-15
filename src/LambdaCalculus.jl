@@ -1,4 +1,4 @@
-module Lambdas
+module LambdaCalculus
 
 export AbstractTerm,
     addprime,
@@ -71,4 +71,4 @@ include("meta.jl")
 include("common_functions.jl")
 
 
-end # module
+end # module LambdaCalculus

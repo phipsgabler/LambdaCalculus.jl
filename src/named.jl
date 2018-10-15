@@ -2,8 +2,8 @@ module Named
 
 import Base: convert, getindex, show
 
-using ..Lambdas
-import ..Lambdas: freevars, reify, substitute, vartype
+using ..LambdaCalculus
+import ..LambdaCalculus: freevars, reify, substitute, vartype
 
 export Term,
     Var,
