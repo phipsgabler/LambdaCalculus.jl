@@ -14,7 +14,7 @@ convert(::Type{<:DeBruijn.Term}, t::Named.Term) = convert(DeBruijn.Term, t, coll
 convert(::Type{DeBruijn.Term}, t::NT, fv::Vector{Symbol}) where {NT<:Named.Term} =
     convert(equivalent_type(NT), t, fv)
 convert(::Type{DeBruijn.Var}, v::Named.Var, fv::Vector{Symbol}) =
-    DeBruijn.Var(findlast(isequal(v.name), fv))
+    DeBruijn.Var(findfirst(isequal(v.name), fv))
 convert(::Type{DeBruijn.App}, t::Named.App, fv::Vector{Symbol}) =
     DeBruijn.App(convert(DeBruijn.Term, t.car, fv), convert(DeBruijn.Term, t.cdr, fv))
 convert(::Type{DeBruijn.Abs}, t::Named.Abs, fv::Vector{Symbol}) =
