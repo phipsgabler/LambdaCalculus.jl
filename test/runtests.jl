@@ -18,11 +18,13 @@ Log.global_logger(Log.SimpleLogger(stderr, Log.Debug))
         @test l ≃ r
 
         @test freevars(N.@λ x -> y) == Set([:y])
+        @test (N.@λ x) ≃ (N.@lambda y)
     end
 
     @testset "DeBruijn" begin
         id = D.@λ x -> x
-        l = D.@λ (x -> x)(a)
+        @test_skip l = D.@λ $id(a)
+        l = D.@lambda (x -> x)(a)
         r = D.@λ (y -> y)(a)
         @test l ≃ r
 
@@ -56,5 +58,18 @@ end
         @test convert(D.Term, tn) ≃ tx
         @test convert(N.Term, tx, varnames) ≃ tn
     end
+end
+
+@testset "Evaluation" begin
+    # terms = [@lambda((x -> (x -> x))(z -> z)),
+    #                @lambda((x -> x)(z -> (x -> x)(z))),
+    #                @lambda((f -> x -> f(f(x)))(f -> x -> f(f(x))))]
+    # results = [@lambda(x -> x),
+    #                  @lambda(z -> z),
+    #                  @lambda(x -> y -> x(x(x(x(y)))))]
+    
+    # for (t, r) in zip(terms, results)
+    #     @test alpha_equivalent(evaluate(t), r)
+    # end
 end
 
