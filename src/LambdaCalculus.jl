@@ -68,8 +68,6 @@ Reduce `term` to normal form
 """
 function evaluate end
 
-struct NoRuleApplies end
-
 
 include("named.jl")
 include("debruijn.jl")
