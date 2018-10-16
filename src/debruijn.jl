@@ -3,15 +3,14 @@ module DeBruijn
 import Base: show
 
 using ..LambdaCalculus
-import ..LambdaCalculus: freevars, reify, substitute, vartype
+import ..LambdaCalculus: freevars, reify, vartype
 
 export Term,
     Var,
     App,
     Abs,
     freevars,
-    reify,
-    substitute
+    reify
 
 
 const Index = Int
@@ -59,32 +58,14 @@ freevars_at(level::Int, t::Var) = t.index > level ? Set([t.index]) : Set{Index}(
 freevars_at(level::Int, t::Abs) = setdiff(freevars_at(level + 1, t.body), Set([t]))
 freevars_at(level::Int, t::App) = freevars_at(level, t.car) ∪ freevars_at(level, t.cdr)
 
-
-shift(c::Index, d::Index, t::Var) = (t.index < c) ? t : Var(t.index + d)
-shift(c::Index, d::Index, t::Abs) = Abs(t.boundname, shift(c + 1, d, t.body))
-shift(c::Index, d::Index, t::App) = App(shift(c, d, t.car), shift(c, d, t.cdr))
-
-"""
-    shift(c, d, term) -> Term
-Increase indices of free variables in `term`, which are at least as big as `c`, by `d`.
-"""
-shift
-
-"""
-    shift(d, term) -> Term
-Increase indices of free variables in `term` by `d`.
-"""
-shift(d::Index, t::Term) = shift(1, d, t)
-
-substitute(i::Index, s::Term, t::Var) = (t.index == i) ? s : t
-substitute(i::Index, s::Term, t::App) = App(substitute(i, s, t.car), substitute(i, s, t.cdr))
-substitute(i::Index, s::Term, t::Abs) = Abs(t.boundname, substitute(i + 1, shift(1, s), t.body))
-
 reify(v::Var) = :(Var($(v.index)))
 reify(t::Abs) = :(Abs($(reify(t.body))))
 reify(t::App) = :(App($(reify(t.car)), $(reify(t.cdr))))
 
 vartype(::Type{<:Term}) = Var
 vartype(::Term) = Var
+
+
+include("debruijn_evaluate.jl")
 
 end # module DeBruijn

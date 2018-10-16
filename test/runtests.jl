@@ -45,6 +45,8 @@ end
                         (D.@lambda (x -> x(x))(x -> x(x))),
                         (D.@lambda x -> y -> x),
                         (D.@lambda x -> y)]
+
+    @test_broken convert(D.Term, N.@lambda((x -> (x -> x)))) ≃ D.@lambda x -> (y -> y)
     
     for t in named_lambdas
         @test convert(N.Term, convert(D.Term, t), varnames) ≃ t
@@ -61,15 +63,17 @@ end
 end
 
 @testset "Evaluation" begin
-    # terms = [@lambda((x -> (x -> x))(z -> z)),
-    #                @lambda((x -> x)(z -> (x -> x)(z))),
-    #                @lambda((f -> x -> f(f(x)))(f -> x -> f(f(x))))]
-    # results = [@lambda(x -> x),
-    #                  @lambda(z -> z),
-    #                  @lambda(x -> y -> x(x(x(x(y)))))]
+    terms = [#D.@lambda((x -> (x -> x))(z -> z)),
+             D.@lambda((x -> x)(z -> (x -> x)(z))),
+             D.@lambda((f -> x -> f(f(x)))(f -> x -> f(f(x))))
+             ]
+    results = [#D.@lambda(x -> x),
+               D.@lambda(z -> z),
+               D.@lambda(x -> y -> x(x(x(x(y)))))
+               ]
     
-    # for (t, r) in zip(terms, results)
-    #     @test alpha_equivalent(evaluate(t), r)
-    # end
+    for (t, r) in zip(terms, results)
+        @test D.evaluate(t, 100) ≃ r
+    end
 end
 

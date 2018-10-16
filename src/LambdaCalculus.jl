@@ -8,6 +8,7 @@ export AbstractTerm,
     substitute
 
 
+
 abstract type AbstractTerm end
 
 addprime(s::String, n = 1) = string(s, "′" ^ n)
@@ -43,8 +44,6 @@ Will rename bound variables, if required.
 """
 function substitute end
 
-getindex(t::T, subst::Pair{<:Any, <:T}) where {T} = substitute(subst[1], subst[2], t)
-
 
 """
     reify(t::Term) -> Expr
@@ -60,6 +59,16 @@ function reify end
 Determine the type of (free) variables used in term type `type`.
 """
 function vartype end
+
+
+"""
+    evaluate(term) -> term
+
+Reduce `term` to normal form
+"""
+function evaluate end
+
+struct NoRuleApplies end
 
 
 include("named.jl")
