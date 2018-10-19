@@ -29,10 +29,9 @@ include("common_functions.jl")
 
 include("Named/Named.jl")
 include("DeBruijn/DeBruijn.jl")
-# include("locally_nameless.jl")
+include("LocallyNameless/LocallyNameless.jl")
 
 include("conversions.jl")
-# include("meta.jl")
 
 
 end # module LambdaCalculus
