@@ -3,7 +3,7 @@ module DeBruijn
 import Base: length, show
 
 using ..LambdaCalculus
-import ..LambdaCalculus: freevars, reify, vartype
+import ..LambdaCalculus: boundvartype, freevartype, reify
 
 export Term,
     Var,
@@ -56,20 +56,15 @@ length(t::Var) = t.index + 1
 length(t::App) = length(t.car) + length(t.cdr) + 2
 length(t::Abs) = length(t.body) + 2
 
-
-freevars(t::Term) = freevars_at(0, t)
-freevars_at(level::Int, t::Var) = t.index > level ? Set([t.index]) : Set{Index}()
-freevars_at(level::Int, t::Abs) = setdiff(freevars_at(level + 1, t.body), Set([t]))
-freevars_at(level::Int, t::App) = freevars_at(level, t.car) ∪ freevars_at(level, t.cdr)
-
 reify(v::Var) = :(Var($(v.index)))
 reify(t::Abs) = :(Abs($(reify(t.body))))
 reify(t::App) = :(App($(reify(t.car)), $(reify(t.cdr))))
 
-vartype(::Type{<:Term}) = Var
-vartype(::Term) = Var
+freevartype(::Type{<:Term}) = Var
+boundvartype(::Type{<:Term}) = Var
 
 
-include("debruijn_evaluate.jl")
+include("syntactic.jl")
+include("meta.jl")
 
 end # module DeBruijn

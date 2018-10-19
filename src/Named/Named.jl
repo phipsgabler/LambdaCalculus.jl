@@ -1,17 +1,15 @@
 module Named
 
-import Base: convert, getindex, show
+import Base: convert, show
 
 using ..LambdaCalculus
-import ..LambdaCalculus: freevars, reify, substitute, vartype
+import ..LambdaCalculus: boundvartype, freevartype, reify
 
 export Term,
     Var,
     App,
     Abs,
-    freevars,
-    reify,
-    substitute
+    reify
 
 
 """Named lambda terms, built using only the following rule: 
@@ -41,38 +39,6 @@ end
 show(io::IO, t::Abs) = print(io, "(λ", t.boundname, ".", t.body, ")")
 show(io::IO, t::App) =  print(io, "(", t.car, " ", t.cdr, ")")
 show(io::IO, t::Var) = print(io, t.name)
-
-
-freevars(t::Var) = Set([t.name])
-freevars(t::Abs) = filter(!isequal(t.boundname), freevars(t.body))
-freevars(t::App) = freevars(t.car) ∪ freevars(t.cdr)
-
-
-
-function substitute(name::Symbol, s::Term, t::Var)
-    return name == t.name ? s : t
-end
-
-function substitute(name::Symbol, s::Term, t::App)
-    return App(substitute(name, s, t.car), substitute(name, s, t.cdr))
-end
-
-function substitute(name::Symbol, s::Term, t::Abs)
-    if name == t.boundname
-        return t
-    else
-        fv = freevars(t.body)
-        
-        if name ∉ fv
-            return Abs(t.boundname, substitute(name, s, t.body))
-        else
-            freshvar = Var(freshname(addprime(name), fv))
-            t′ = Abs(freshvar.name, substitute(name, freshvar, t.body))
-            return substitute(name, s, t′)
-        end
-    end
-end
-
 
 
 # Conversions from expressions to terms
@@ -114,7 +80,11 @@ reify(v::Var) = :(Var($(Meta.quot(v.name))))
 reify(t::Abs) = :(Abs($(Meta.quot(t.boundname)), $(reify(t.body))))
 reify(t::App) = :(App($(reify(t.car)), $(reify(t.cdr))))
 
-vartype(::Type{<:Term}) = Var
-vartype(::Term) = Var
+freevartype(::Type{<:Term}) = Var
+boundvartype(::Type{<:Term}) = Var
+
+
+include("syntactic.jl")
+include("meta.jl")
 
 end # module Named

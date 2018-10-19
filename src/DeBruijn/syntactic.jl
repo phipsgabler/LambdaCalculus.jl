@@ -1,9 +1,19 @@
-import ..LambdaCalculus: substitute
+import ..LambdaCalculus: ≃, alpha_equivalent, freevars, substitute
 
-export evaluate,
+export ≃, ≄, alpha_equivalent,
+    evaluate,
     evaluateonce,
+    freevars,
     shift,
     substitute
+
+alpha_equivalent(t1::Term, t2::Term) = t1 == t2
+
+
+freevars(t::Term) = freevars_at(0, t)
+freevars_at(level::Int, t::Var) = t.index > level ? Set([t.index]) : Set{Index}()
+freevars_at(level::Int, t::Abs) = setdiff(freevars_at(level + 1, t.body), Set([t]))
+freevars_at(level::Int, t::App) = freevars_at(level, t.car) ∪ freevars_at(level, t.cdr)
 
 
 shift(c::Index, d::Index, t::Var) = (t.index < c) ? t : Var(t.index + d)
