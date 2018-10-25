@@ -1,11 +1,10 @@
-import ..LambdaCalculus: ≃, alpha_equivalent, freevars, substitute
+import ..LambdaCalculus: ≃, alpha_equivalent, evaluate, freevars, substitute
 
-export ≃, ≄, alpha_equivalent,
-    evaluate,
-    evaluateonce,
-    freevars,
-    shift,
-    substitute
+using Reexport
+@reexport using ..LambdaCalculus
+
+export evaluateonce,
+    shift
 
 alpha_equivalent(t1::Term, t2::Term) = t1 == t2
 
@@ -38,32 +37,27 @@ substitute(i::Index, s::Term, t::App) = App(substitute(i, s, t.car), substitute(
 substitute(i::Index, s::Term, t::Abs) = Abs(substitute(i + 1, shift(1, s), t.body))
 
 
-function evaluateonce_app(car::Var, cdr::Term)
-    newcdr = evaluateonce(cdr)
-    if newcdr !== nothing
-        App(car, newcdr)
-    else
-        nothing
-    end
-end
-
 function evaluateonce_app(car::Abs, cdr::Term)
     shift(-1, substitute(1, shift(1, cdr), car.body))
 end
 
-function evaluateonce_app(car::App, cdr::Term)
+function evaluateonce_app(car::Union{App, Var}, cdr::Term)
     newcar = evaluateonce(car)
-    if newcar !== nothing
-        App(newcar, cdr)
+    if newcar === nothing
+        newcdr = evaluateonce(cdr)
+        if newcdr !== nothing
+            App(car, newcdr)
+        else
+            nothing
+        end
     else
-        nothing
+        App(newcar, cdr)
     end
 end
 
 
-@doc "Reduce an indexed term by one step in normal order" evaluateonce
+evaluateonce(term::Var) = nothing
 evaluateonce(term::App) = evaluateonce_app(term.car, term.cdr)
-evaluateonce(term::Var) = term
 function evaluateonce(term::Abs)
     newbody = evaluateonce(term.body)
     if newbody !== nothing
@@ -73,29 +67,31 @@ function evaluateonce(term::Abs)
     end
 end
 
+"""
+    evaluateonce(term)
+
+Reduce an indexed term by one step in normal order (i.e., the leftmost, outermost redex).  If there
+is no redex, return `nothing`.
+"""
+evaluateonce
+
 
 """
-    evaluate(term::Term[, maxsteps::Int])
+    evaluate(term::Term[, maxsteps])
 
 Evaluate an indexed term by normal order reduction, using maximally `maxsteps` reductions.
 """
-function evaluate(term::Term, maxsteps::Int)
-    reduced = term
-    
-    while maxsteps > 0 && reduced !== nothing
-        reduced = evaluateonce(reduced)
-        maxsteps -= 1
+function evaluate(term::Term, maxsteps = Inf)
+    while maxsteps > 0
+        reduced = evaluateonce(term)
+
+        if reduced === nothing
+            return term
+        else
+            term = reduced
+            maxsteps -= 1
+        end
     end
 
-    reduced
-end
-
-function evaluate(term::Term)
-    reduced = term
-
-    while reduced !== nothing
-        reduced = evaluateonce(reduced)
-    end
-
-    reduced
+    return term
 end

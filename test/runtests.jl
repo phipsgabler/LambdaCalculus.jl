@@ -63,15 +63,17 @@ end
 end
 
 @testset "Evaluation" begin
-    terms = [D.@lambda((x -> (x -> x))(z -> z)),
-             D.@lambda((x -> x)(z -> (x -> x)(z))),
-             D.@lambda((f -> x -> f(f(x)))(f -> x -> f(f(x))))]
-    results = [D.@lambda(x -> x),
-               D.@lambda(z -> z),
-               D.@lambda(x -> y -> x(x(x(x(y)))))]
-    
-    for (t, r) in zip(terms, results)
-        @test D.evaluate(t, 100) ≃ r
+    @testset "DeBruijn" begin
+        terms = [D.@lambda((x -> (x -> x))(z -> z)),
+                 D.@lambda((x -> x)(z -> (x -> x)(z))),
+                 D.@lambda((f -> x -> f(f(x)))(f -> x -> f(f(x))))]
+        results = [D.@lambda(x -> x),
+                   D.@lambda(z -> z),
+                   D.@lambda(x -> y -> x(x(x(x(y)))))]
+        
+        for (t, r) in zip(terms, results)
+            @test D.evaluate(t, 100) ≃ r
+        end
     end
 end
 
