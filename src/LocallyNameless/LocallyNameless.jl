@@ -1,9 +1,18 @@
 module LocallyNameless
 
-import Base: show
+using Reexport
+@reexport using ..LambdaCalculus
 
-using ..LambdaCalculus
+import Base: show
 import ..LambdaCalculus: boundvartype, freevartype, reify
+
+export Index,
+    Term,
+    BVar,
+    FVar,
+    Abs,
+    App
+
 
 const Index = Int
 
@@ -11,7 +20,7 @@ abstract type Term <: AbstractTerm end
 
 struct BVar <: Term
     index::Index
-    BVar(index) = index > 0 ? new(index) : error("index must be greater than 0")
+    BVar(index) = index ≥ 1 ? new(index) : error("index must be at least 1")
 end
 
 struct FVar <: Term
@@ -33,6 +42,12 @@ show(io::IO, t::Abs) = print(io, "(λ.", t.body, ")")
 show(io::IO, t::App) = print(io, "(", t.car, " ", t.cdr, ")")
 show(io::IO, t::FVar) = print(io, t.name)
 show(io::IO, t::BVar) = print(io, "⟨", t.index, "⟩")
+
+
+reify(f::FVar) = :(FVar($(f.name)))
+reify(b::BVar) = :(BVar($(b.index)))
+reify(t::Abs) = :(Abs($(reify(t.body))))
+reify(t::App) = :(App($(reify(t.car)), $(reify(t.cdr))))
 
 
 boundvartype(::Type{<:Term}) = BVar
