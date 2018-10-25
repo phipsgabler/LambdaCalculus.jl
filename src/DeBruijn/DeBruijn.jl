@@ -5,11 +5,15 @@ import Base: length, show
 using ..LambdaCalculus
 import ..LambdaCalculus: boundvartype, freevartype, reify
 
-export Term,
-    Var,
-    App,
+export App,
     Abs,
-    freevars,
+    Index,
+    Term,
+    Var
+
+    
+export boundvartype,
+    freevartype
     reify
 
 
