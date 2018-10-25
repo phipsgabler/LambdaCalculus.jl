@@ -23,13 +23,12 @@ Log.global_logger(Log.SimpleLogger(stderr, Log.Debug))
 
     @testset "DeBruijn" begin
         id = D.@λ x -> x
-        @test_skip l = D.@λ $id(a)
-        l = D.@lambda (x -> x)(a)
+        l = D.@λ $id(a)
         r = D.@λ (y -> y)(a)
         @test l ≃ r
 
         @test freevars(D.@λ x -> y) == Set([2])
-        @test_skip (D.@λ x) ≄ (D.@lambda y)
+        @test_broken (D.@λ x) ≄ (D.@lambda y)
     end
 end
 
