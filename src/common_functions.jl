@@ -1,6 +1,7 @@
 export ≃, ≄,
     alpha_equivalent,
     evaluate,
+    evaluateonce,
     freevars,
     reify,
     substitute,
@@ -20,25 +21,34 @@ const ≄ = !≃
 
 
 """
-    evaluate(term) -> term
+    evaluate(term[, maxsteps])
 
-Reduce `term` to normal form
+Evaluate `term` in normal order, using maximally `maxsteps` reductions.
 """
 function evaluate end
 
 
 """
-    freevars(t::Term) -> Set
+    evaluateonce(term)
 
-Calculate the set of free variables in `t`.
+Evaluate `term` by one step in normal order (i.e., the leftmost, outermost redex).  If there
+is no redex, return `nothing`.
+"""
+function evaluateonce end
+
+
+"""
+    freevars(term) -> Set
+
+Calculate the set of free variables in `term`.
 """
 function freevars end
 
 
 """
-    reify(t::Term) -> Expr
+    reify(term) -> Expr
 
-Construct an expression which, when evaluated, returns `t`.
+Construct an expression which, when evaluated, returns `term`.
 """
 function reify end
 

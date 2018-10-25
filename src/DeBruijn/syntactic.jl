@@ -1,4 +1,4 @@
-import ..LambdaCalculus: ≃, alpha_equivalent, evaluate, freevars, substitute
+import ..LambdaCalculus: ≃, alpha_equivalent, evaluate, evaluateonce, freevars, substitute
 
 export evaluateonce,
     shift
@@ -64,20 +64,7 @@ function evaluateonce(term::Abs)
     end
 end
 
-"""
-    evaluateonce(term)
 
-Reduce an indexed term by one step in normal order (i.e., the leftmost, outermost redex).  If there
-is no redex, return `nothing`.
-"""
-evaluateonce
-
-
-"""
-    evaluate(term::Term[, maxsteps])
-
-Evaluate an indexed term by normal order reduction, using maximally `maxsteps` reductions.
-"""
 function evaluate(term::Term, maxsteps = Inf)
     while maxsteps > 0
         reduced = evaluateonce(term)
