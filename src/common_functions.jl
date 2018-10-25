@@ -1,4 +1,5 @@
-export ≃, ≄, alpha_equivalent,
+export ≃, ≄,
+    alpha_equivalent,
     evaluate,
     freevars,
     reify,

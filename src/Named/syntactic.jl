@@ -1,10 +1,5 @@
 import ..LambdaCalculus: ≃, alpha_equivalent, freevars, substitute
 
-export ≃, ≄, alpha_equivalent,
-    freevars,
-    substitute
-
-
 const EqList = Vector{Tuple{Symbol, Symbol}}
 
 function alpha_equivalent(t1::Var, t2::Var, equivalences::EqList)
@@ -37,8 +32,6 @@ freevars(t::Var) = Set([t.name])
 freevars(t::Abs) = filter(!isequal(t.boundname), freevars(t.body))
 freevars(t::App) = freevars(t.car) ∪ freevars(t.cdr)
 
-
-⌗(name::Symbol, t::Term) = name ∉ freevars(t)
 
 function substitute(name::Symbol, s::Term, t::Var)
     return name == t.name ? s : t

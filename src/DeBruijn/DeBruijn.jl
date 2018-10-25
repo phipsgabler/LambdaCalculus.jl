@@ -1,8 +1,9 @@
 module DeBruijn
 
-import Base: length, show
+using Reexport
+@reexport using ..LambdaCalculus
 
-using ..LambdaCalculus
+import Base: length, show
 import ..LambdaCalculus: boundvartype, freevartype, reify
 
 export App,
@@ -10,11 +11,6 @@ export App,
     Index,
     Term,
     Var
-
-    
-export boundvartype,
-    freevartype
-    reify
 
 
 const Index = Int

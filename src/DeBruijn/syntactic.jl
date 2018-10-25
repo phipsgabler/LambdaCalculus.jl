@@ -1,8 +1,5 @@
 import ..LambdaCalculus: ≃, alpha_equivalent, evaluate, freevars, substitute
 
-using Reexport
-@reexport using ..LambdaCalculus
-
 export evaluateonce,
     shift
 

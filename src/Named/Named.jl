@@ -1,15 +1,16 @@
 module Named
 
-import Base: convert, show
+using Reexport
+@reexport using ..LambdaCalculus
 
-using ..LambdaCalculus
+import Base: convert, show
 import ..LambdaCalculus: boundvartype, freevartype, reify
+
 
 export Term,
     Var,
     App,
-    Abs,
-    reify
+    Abs
 
 
 """Named lambda terms, built using only the following rule: 

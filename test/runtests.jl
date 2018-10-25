@@ -72,7 +72,7 @@ end
                    D.@lambda(x -> y -> x(x(x(x(y)))))]
         
         for (t, r) in zip(terms, results)
-            @test D.evaluate(t, 100) ≃ r
+            @test evaluate(t, 100) ≃ r
         end
     end
 end

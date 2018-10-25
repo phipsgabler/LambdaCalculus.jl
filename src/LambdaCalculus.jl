@@ -26,7 +26,6 @@ end
 
 include("common_functions.jl")
 
-
 include("Named/Named.jl")
 include("DeBruijn/DeBruijn.jl")
 include("LocallyNameless/LocallyNameless.jl")
