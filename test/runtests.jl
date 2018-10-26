@@ -4,7 +4,7 @@ using Test
 
 const N = LambdaCalculus.Named
 const D = LambdaCalculus.DeBruijn
-const LC = LambdaCalculus.LocallyNameless
+const LN = LambdaCalculus.LocallyNameless
 
 const Log = Base.CoreLogging
 Log.global_logger(Log.SimpleLogger(stderr, Log.Debug))
@@ -20,6 +20,9 @@ Log.global_logger(Log.SimpleLogger(stderr, Log.Debug))
 
         @test freevars(N.@λ x -> y) == Set([:y])
         @test (N.@λ x) ≄ (N.@lambda y)
+
+        t = N.@lambda x -> y
+        @test_broken (N.@lambda y -> $t) ≃ (N.@lambda z1 -> z2 -> y)
     end
 
     @testset "DeBruijn" begin
@@ -30,16 +33,22 @@ Log.global_logger(Log.SimpleLogger(stderr, Log.Debug))
 
         @test freevars(D.@λ x -> y) == Set([2])
         @test_broken (D.@λ x) ≄ (D.@lambda y)
+
+        t = D.@lambda x -> y
+        @test (D.@lambda y -> $t) ≃ (D.@lambda z1 -> z2 -> y)
     end
 
     @testset "LocallyNameless" begin
-        id = LC.@λ x -> x
-        l = LC.@λ $id(a)
-        r = LC.@λ (y -> y)(a)
+        id = LN.@λ x -> x
+        l = LN.@λ $id(a)
+        r = LN.@λ (y -> y)(a)
         @test l ≃ r
 
-        @test freevars(LC.@λ x -> y) == Set([:y])
-        # @test_broken (LC.@λ x) ≄ (LC.@lambda y)
+        @test freevars(LN.@λ x -> y) == Set([:y])
+        # @test_broken (LN.@λ x) ≄ (LN.@lambda y)
+
+        t = LN.@lambda x -> y
+        @test (LN.@lambda y -> $t) ≃ (LN.@lambda z1 -> z2 -> y)
     end
 end
 
