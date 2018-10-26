@@ -50,7 +50,7 @@ end
 
 show(io::IO, t::Abs) = print(io, "(λ", ".", t.body, ")")
 show(io::IO, t::App) = print(io, "(", t.car, " ", t.cdr, ")")
-show(io::IO, t::Var) = print(io, t.index)
+show(io::IO, t::Var) = print(io, "⟨", t.index, "⟩")
 
 length(t::Var) = t.index + 1
 length(t::App) = length(t.car) + length(t.cdr) + 2
