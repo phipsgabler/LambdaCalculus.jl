@@ -1,4 +1,4 @@
-import ..LambdaCalculus: ≃, alpha_equivalent, freevars, substitute
+import ..LambdaCalculus: alpha_equivalent, freevars, substitute
 
 const EqList = Vector{Tuple{Symbol, Symbol}}
 
@@ -24,7 +24,7 @@ alpha_equivalent(t1::App, t2::App, equivalences::EqList) =
     alpha_equivalent(t1.car, t2.car, equivalences) && alpha_equivalent(t1.cdr, t2.cdr, equivalences)
 alpha_equivalent(t1::Abs, t2::Abs, equivalences::EqList) =
     alpha_equivalent(t1.body, t2.body, [(t1.boundname, t2.boundname); equivalences])
-alpha_equivalent(t1::Term, t2::Term, equivalences::EqList) = False
+alpha_equivalent(t1::Term, t2::Term, equivalences::EqList) = false
 alpha_equivalent(t1::Term, t2::Term) = alpha_equivalent(t1, t2, Tuple{Symbol, Symbol}[])
 
 
