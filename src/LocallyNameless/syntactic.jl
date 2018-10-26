@@ -1,8 +1,11 @@
-import ..LambdaCalculus: evaluate, evaluateonce, freevars, substitute
+import ..LambdaCalculus: alpha_equivalent, evaluate, evaluateonce, freevars, substitute
 
 export closeterm,
     is_lc,
     openterm
+
+
+alpha_equivalent(t1::Term, t2::Term) = t1 == t2
 
 
 freevars(t::FVar) = Set([t.name])

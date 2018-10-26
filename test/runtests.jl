@@ -36,7 +36,7 @@ Log.global_logger(Log.SimpleLogger(stderr, Log.Debug))
         id = LC.@λ x -> x
         l = LC.@λ $id(a)
         r = LC.@λ (y -> y)(a)
-        # @test l ≃ r
+        @test l ≃ r
 
         @test freevars(LC.@λ x -> y) == Set([:y])
         # @test_broken (LC.@λ x) ≄ (LC.@lambda y)
