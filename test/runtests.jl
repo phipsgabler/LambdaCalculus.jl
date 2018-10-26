@@ -4,8 +4,9 @@ using Test
 
 const N = LambdaCalculus.Named
 const D = LambdaCalculus.DeBruijn
-const Log = Base.CoreLogging
+const LC = LambdaCalculus.LocallyNameless
 
+const Log = Base.CoreLogging
 Log.global_logger(Log.SimpleLogger(stderr, Log.Debug))
 
 
@@ -29,6 +30,16 @@ Log.global_logger(Log.SimpleLogger(stderr, Log.Debug))
 
         @test freevars(D.@λ x -> y) == Set([2])
         @test_broken (D.@λ x) ≄ (D.@lambda y)
+    end
+
+    @testset "LocallyNameless" begin
+        id = LC.@λ x -> x
+        l = LC.@λ $id(a)
+        r = LC.@λ (y -> y)(a)
+        # @test l ≃ r
+
+        @test freevars(LC.@λ x -> y) == Set([:y])
+        # @test_broken (LC.@λ x) ≄ (LC.@lambda y)
     end
 end
 

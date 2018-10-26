@@ -55,6 +55,6 @@ freevartype(::Type{<:Term}) = FVar
 
 
 include("syntactic.jl")
-
+include("meta.jl")
 
 end # module LocallyNameless
