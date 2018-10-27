@@ -42,10 +42,10 @@ function evaluateonce_app(car::Union{App, Var}, cdr::Term)
     newcar = evaluateonce(car)
     if newcar === nothing
         newcdr = evaluateonce(cdr)
-        if newcdr !== nothing
-            App(car, newcdr)
-        else
+        if newcdr === nothing
             nothing
+        else
+            App(car, newcdr)
         end
     else
         App(newcar, cdr)
