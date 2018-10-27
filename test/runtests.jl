@@ -72,7 +72,7 @@ end
     end
 
     for t in debruijn_lambdas
-        @test convert(D.Term, convert(N.Term, t, [:x, :y, :z])) == t
+        @test convert(D.Term, convert(N.Term, t, varnames)) == t
     end
 
     for (tn, tx) in zip(named_lambdas, debruijn_lambdas)
@@ -85,10 +85,31 @@ end
     @testset "DeBruijn" begin
         terms = [D.@lambda((x -> (x -> x))(z -> z)),
                  D.@lambda((x -> x)(z -> (x -> x)(z))),
+                 D.@lambda(y -> (f -> x -> f(x))(y)),
+                 D.@lambda((f -> x -> f(x))(f -> x -> f(x))),
                  D.@lambda((f -> x -> f(f(x)))(f -> x -> f(f(x))))]
         results = [D.@lambda(x -> x),
                    D.@lambda(z -> z),
+                   D.@lambda(f -> x -> f(x)),
+                   D.@lambda(f -> x -> f(x)),
                    D.@lambda(x -> y -> x(x(x(x(y)))))]
+        
+        for (t, r) in zip(terms, results)
+            @test evaluate(t, 100) ≃ r
+        end
+    end
+
+    @testset "LocallyNameless" begin
+        terms = [LN.@lambda((x -> (x -> x))(z -> z)),
+                 LN.@lambda((x -> x)(z -> (x -> x)(z))),
+                 LN.@lambda(y -> (f -> x -> f(x))(y)),
+                 LN.@lambda((f -> x -> f(x))(f -> x -> f(x))),
+                 LN.@lambda((f -> x -> f(f(x)))(f -> x -> f(f(x))))]
+        results = [LN.@lambda(x -> x),
+                   LN.@lambda(z -> z),
+                   LN.@lambda(f -> x -> f(x)),
+                   LN.@lambda(f -> x -> f(x)),
+                   LN.@lambda(x -> y -> x(x(x(x(y)))))]
         
         for (t, r) in zip(terms, results)
             @test evaluate(t, 100) ≃ r

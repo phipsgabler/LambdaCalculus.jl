@@ -14,24 +14,25 @@ freevars(t::Abs) = freevars(t.body)
 freevars(t::App) = freevars(t.car) ∪ freevars(t.cdr)
 
 
-openterm(i::Index, s::Term, t::BVar) = t.index == i ? s : t
-openterm(i::Index, s::Term, t::FVar) = t
-openterm(i::Index, s::Term, t::App) = App(openterm(i, s, t.car), openterm(i, s, t.cdr))
-openterm(i::Index, s::Term, t::Abs) = Abs(t.boundname, openterm(i + 1, s, t.body))
-openterm(s::Term, t::Term) = openterm(1, s, t)
+openterm(k::Index, u::BVar, t::BVar) = t.index == k ? BVar(u.index + k - 1) : t
+openterm(k::Index, u::Term, t::BVar) = t.index == k ? u : t
+openterm(k::Index, u::Term, t::FVar) = t
+openterm(k::Index, u::Term, t::App) = App(openterm(k, u, t.car), openterm(k, u, t.cdr))
+openterm(k::Index, u::Term, t::Abs) = Abs(openterm(k + 1, u, t.body))
+openterm(u::Term, t::Term) = openterm(1, u, t)
 
 
-closeterm(i::Index, x::Symbol, t::BVar) = t
-closeterm(i::Index, x::Symbol, t::FVar) = t.index == i ? BVar(i) : t
-closeterm(i::Index, x::Symbol, t::App) = App(closeterm(i, x, t.car), closeterm(i, x, t.cdr))
-closeterm(i::Index, x::Symbol, t::Abs) = Abs(t.boundname, closeterm(i + 1, x, t.body))
+closeterm(k::Index, x::Symbol, t::BVar) = t
+closeterm(k::Index, x::Symbol, t::FVar) = t.name == x ? BVar(k) : t
+closeterm(k::Index, x::Symbol, t::App) = App(closeterm(k, x, t.car), closeterm(k, x, t.cdr))
+closeterm(k::Index, x::Symbol, t::Abs) = Abs(closeterm(k + 1, x, t.body))
 closeterm(x::Symbol, t::Term) = closeterm(1, x, t)
 
 
-substitute(x::Symbol, s::Term, t::BVar) = t
-substitute(x::Symbol, s::Term, t::FVar) = t.name == x ? s : t
-substitute(x::Symbol, s::Term, t::App) = App(substitute(x, s, t.car), substitute(x, s, t.cdr))
-substitute(x::Symbol, s::Term, t::Abs) = Abs(t.boundname, substitute(x, s, t.body))
+substitute(x::Symbol, u::Term, t::BVar) = t
+substitute(x::Symbol, u::Term, t::FVar) = t.name == x ? u : t
+substitute(x::Symbol, u::Term, t::App) = App(substitute(x, u, t.car), substitute(x, u, t.cdr))
+substitute(x::Symbol, u::Term, t::Abs) = Abs(substitute(x, u, t.body))
 
 
 is_lc(t::BVar, level::Index) = t.index ≤ level
@@ -42,32 +43,23 @@ is_lc(t::Term) = is_lc(t, 1)
 
 
 function evaluateonce_app(car::Abs, cdr::Term)
-    openterm(1, cdr, car.body)
+    openterm(cdr, car.body)
 end
 
 function evaluateonce_app(car::Union{App, FVar, BVar}, cdr::Term)
     newcar = evaluateonce(car)
     if newcar === nothing
         newcdr = evaluateonce(cdr)
-        if newcdr !== nothing
-            App(car, newcdr)
-        else
+        if newcdr === nothing
             nothing
+        else
+            App(car, newcdr)
         end
     else
         App(newcar, cdr)
     end
 end
 
-
-function evaluateonce_app(car::App, cdr::Term)
-    newcar = evaluateonce(car)
-    if newcar !== nothing
-        App(newcar, cdr)
-    else
-        nothing
-    end
-end
 
 evaluateonce(term::Union{FVar, BVar}) = nothing
 evaluateonce(term::App) = evaluateonce_app(term.car, term.cdr)
