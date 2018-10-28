@@ -40,8 +40,8 @@ end
 
 show(io::IO, t::Abs) = print(io, "(λ.", t.body, ")")
 show(io::IO, t::App) = print(io, "(", t.car, " ", t.cdr, ")")
-show(io::IO, t::FVar) = print(io, t.name)
-show(io::IO, t::BVar) = print(io, "⟨", t.index, "⟩")
+show(io::IO, t::FVar) = print(io, "⌊", t.name, "⌋")
+show(io::IO, t::BVar) = print(io, "⌈", t.index, "⌉")
 
 
 reify(f::FVar) = :(FVar($(f.name)))
