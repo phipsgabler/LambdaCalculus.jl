@@ -53,7 +53,7 @@ Log.global_logger(Log.SimpleLogger(stderr, Log.Debug))
 end
 
 @testset "Conversion" begin
-    varnames = [:x, :y, :z]
+    varnames = NamingContext([:x, :y, :z])
     
     named_lambdas = [(N.@lambda x -> x),
                      (N.@lambda (x -> x(x))(x -> x(x))),
