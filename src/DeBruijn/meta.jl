@@ -21,7 +21,7 @@ meta_freevars(name::Symbol) = Set([name])
 meta_freevars(other) = error("unhandled literal: $other")
 
 
-function meta_convert(expr::Expr, Γ::NamingContext{Symbol}, level = 0)
+function meta_convert(expr::Expr, Γ::NamingContext, level = 0)
     if expr.head == :call && length(expr.args) ≥ 1
         # TODO: handle :* case
         mapfoldl(e -> meta_convert(e, Γ, level), (e, arg) -> :(App($e, $arg)), expr.args)
@@ -40,9 +40,9 @@ function meta_convert(expr::Expr, Γ::NamingContext{Symbol}, level = 0)
     end
 end
 
-meta_convert(name::Symbol, Γ::NamingContext{Symbol}, level = 0) =
+meta_convert(name::Symbol, Γ::NamingContext, level = 0) =
     :(Var($(findfirst(isequal(name), Γ))))
-meta_convert(other, Γ::NamingContext{Symbol}, level = 0) = error("unhandled literal: $other")
+meta_convert(other, Γ::NamingContext, level = 0) = error("unhandled literal: $other")
 
 
 "Convert a (well-formed) Julia expression to a `Term`."

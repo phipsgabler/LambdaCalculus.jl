@@ -2,7 +2,7 @@ import ..LambdaCalculus.LocallyNameless
 
 export @lambda, @λ
 
-function meta_convert(expr::Expr, Γ::NamingContext{Symbol})
+function meta_convert(expr::Expr, Γ::NamingContext)
     if expr.head == :call && length(expr.args) ≥ 1
         # TODO: handle :* case
         mapfoldl(e -> meta_convert(e, Γ), (e, arg) -> :(App($e, $arg)), expr.args)
@@ -21,7 +21,7 @@ function meta_convert(expr::Expr, Γ::NamingContext{Symbol})
     end
 end
 
-function meta_convert(name::Symbol, Γ::NamingContext{Symbol})
+function meta_convert(name::Symbol, Γ::NamingContext)
     index = findfirst(isequal(name), Γ)
     if index === nothing
         :(FVar($(Meta.quot(name))))
@@ -30,15 +30,15 @@ function meta_convert(name::Symbol, Γ::NamingContext{Symbol})
     end
 end
 
-meta_convert(other, Γ::NamingContext{Symbol}) = error("unhandled literal: $other")
+meta_convert(other, Γ::NamingContext) = error("unhandled literal: $other")
 
 
 "Convert a (well-formed) Julia expression to a `Term`."
 macro lambda(expr)
-    meta_convert(expr, NamingContext(Symbol[]))
+    meta_convert(expr, NamingContext())
 end
 
 "Convert a (well-formed) Julia expression to a `Term`."
 macro λ(expr)
-    meta_convert(expr, NamingContext(Symbol[]))
+    meta_convert(expr, NamingContext())
 end

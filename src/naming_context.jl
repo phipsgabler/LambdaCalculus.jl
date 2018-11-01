@@ -1,27 +1,49 @@
 import Base: ==, cat, collect, copy, eltype, filter, first, firstindex, getindex,
-    in, isempty, iterate, keys, last, lastindex, length, map, pairs, show
-#append!, delete!, pop!, popfirst!, push!, pushfirst!, setindex!
+    in, isempty, iterate, keys, last, lastindex, length, map, pairs, show,
+    IteratorEltype, IteratorSize
 
-export NamingContext,
+export Name,
+    NameList,
+    NamingContext,
     freenames,
     pushfirst,
-    freshname
+    freshnames
 
-struct NamingContext{T}
-    freenames::Vector{T}
+const Name = Symbol
+
+
+struct UniqueIndices
+    start::Int
+    log_skip::Int
 end
 
-NamingContext(freenames) = NamingContext{eltype(freenames)}(collect(freenames))
+nextindex(u::UniqueIndices) = UniqueIndices(u.start + 2^u.log_skip, u.log_skip)
+
+function splitindex(u::UniqueIndices)
+    left = UniqueIndices(u.start, u.log_skip + 1)
+    right = UniqueIndices(u.start + 2^u.log_skip, u.log_skip + 1)
+    (left, right)
+end
+
+
+struct NamingContext
+    freenames::Vector{Name}
+    namehint::Name
+    indices::UniqueIndices
+end
+
+NamingContext(freenames = Name[]; namehint = :x) =
+    NamingContext(collect(freenames), namehint, UniqueIndices(1, 0))
 
 freenames(Γ::NamingContext) = Γ.freenames
 
 
 ==(Γ₁::NamingContext, Γ₂::NamingContext) = Γ₁.freenames == Γ₂.freenames
-cat(Γ₁::NamingContext, Γs::NamingContext...) =
-    NamingContext(cat(Γ₁.freenames, freenames.(Γs)...))
+# cat(Γ₁::NamingContext, Γs::NamingContext...) =
+#     NamingContext(cat(Γ₁.freenames, freenames.(Γs)...))
 collect(Γ::NamingContext) = Γ.freenames
-copy(Γ::NamingContext) = NamingContext(copy(Γ.freenames))
-eltype(::Type{NamingContext{T}}) where T = T
+# copy(Γ::NamingContext) = NamingContext(copy(Γ.freenames))
+eltype(::Type{NamingContext}) = Symbol
 first(Γ::NamingContext) = firstindex(Γ.freenames)
 firstindex(Γ::NamingContext) = firstindex(Γ.freenames)
 filter(f, Γ::NamingContext) = NamingContext(filter(f, Γ.freenames))
@@ -35,28 +57,48 @@ length(Γ::NamingContext) = length(Γ.freenames)
 map(f, Γs::NamingContext...) = NamingContext(map(f, freenames.(Γs)...))
 pairs(Γ::NamingContext) = zip(keys(Γ.freenames), Iterators.reverse(Γ.freenames))
 
-function show(io::IO, Γ::NamingContext{T}) where T
-    print(io, "NamingContext{", T, "}([")
+function show(io::IO, Γ::NamingContext)
+    print(io, "NamingContext([")
     join(io, reverse(sprint.(show, Γ.freenames)), ", ")
     print(io, "])")
 end
 
 
-pushfirst(Γ::NamingContext, items...) = NamingContext([Γ.freenames; collect(items)])
 
 
-addprime(s::String, n = 1) = string(s, "′" ^ n)
-addprime(s::Symbol, n = 1) = Symbol(addprime(string(s), n))
+struct FreshNames
+    Γ::NamingContext
+end
 
-"Generate a new name based on `name`, which does not occur in `fv`."
-function freshname(name::T, Γ::NamingContext{T}) where T
-    freshname = name
-    primes = 0
-    
-    while freshname ∈ Γ
-        freshname = addprime(name, primes)
-        primes += 1
+iterate(iter::FreshNames) = iterate(iter, iter.Γ.indices)
+function iterate(iter::FreshNames, state)
+    while true
+        newname = Symbol(iter.Γ.namehint, state.start)
+        if newname ∉ iter.Γ.freenames
+            return newname, nextindex(state)
+        end
+        indices = nextindex(indices)
     end
+end
 
-    return freshname
+IteratorSize(::Type{FreshNames}) = Base.IsInfinite()
+IteratorEltype(::Type{FreshNames}) = Base.HasEltype()
+eltype(::Type{FreshNames}) = Symbol
+
+freshnames(Γ::NamingContext) = FreshNames(Γ)
+
+
+
+pushfirst(Γ::NamingContext, names...) =
+    NamingContext([Γ.freenames; names...], Γ.namehint, Γ.indices)
+
+function freshname(Γ::NamingContext)
+    (newname, newindex) = iterate(FreshNames(Γ))
+    Γ′ = NamingContext([Γ.freenames; newname], Γ.namehint, newindex)
+    (newname, Γ′)
+end
+
+function split(Γ::NamingContext)
+    l, r = splitindex(Γ.indices)
+    NamingContext(Γ.freenames, Γ.namehint, l), NamingContext(Γ.freenames, Γ.namehint, r)
 end
