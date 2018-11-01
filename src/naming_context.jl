@@ -1,4 +1,4 @@
-import Base: ==, cat, collect, copy, eltype, filter, first, firstindex, getindex,
+import Base: ==, checkbounds, collect, eltype, filter, first, firstindex, getindex,
     in, isempty, iterate, keys, last, lastindex, length, map, pairs, show,
     IteratorEltype, IteratorSize
 
@@ -39,6 +39,7 @@ freenames(Γ::NamingContext) = Γ.freenames
 
 
 ==(Γ₁::NamingContext, Γ₂::NamingContext) = Γ₁.freenames == Γ₂.freenames
+checkbounds(::Type{Bool}, Γ::NamingContext, i::Int) = firstindex(Γ) ≤ i ≤ lastindex(Γ)
 # cat(Γ₁::NamingContext, Γs::NamingContext...) =
 #     NamingContext(cat(Γ₁.freenames, freenames.(Γs)...))
 collect(Γ::NamingContext) = Γ.freenames
