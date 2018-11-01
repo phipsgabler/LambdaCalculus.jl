@@ -1,5 +1,7 @@
 import Base: convert
 
+export restorecontext
+
 # Named -> DeBruijn
 convert(::Type{DeBruijn.Term}, t::Named.Term) =
     convert(DeBruijn.Term, t, NamingContext(freevars(t)))
@@ -42,4 +44,19 @@ convert(::Type{Named.Term}, t::DeBruijn.Abs, Γ::NamingContext) =
         Named.Abs(boundname, convert(Named.Term, t.body, Γ′))
     end
 
+# DeBruijn -> LocallyNameless
+function restorecontext(t::DeBruijn.Term; freenamehint = :free, boundnamehint = :x)
+    @assert freenamehint != boundnamehint
+    m = maximum(freevars(t))
+    NamingContext((Symbol(freenamehint, i) for i = 1:m), namehint = boundnamehint)
+end
 
+convert(::Type{LocallyNameless.Term}, t::DeBruijn.Term) =
+    convert(LocallyNameless.Term, t, restorecontext(t), 0)
+convert(::Type{LocallyNameless.Term}, t::DeBruijn.Var, Γ::NamingContext, level::Int) =
+    t.index > level ? LocallyNameless.FVar(Γ[t.index - level]) : LocallyNameless.BVar(t.index)
+convert(::Type{LocallyNameless.Term}, t::DeBruijn.App, Γ::NamingContext, level::Int) =
+    LocallyNameless.App(convert(LocallyNameless.Term, t.car, Γ, level),
+                        convert(LocallyNameless.Term, t.cdr, Γ, level))
+convert(::Type{LocallyNameless.Term}, t::DeBruijn.Abs, Γ::NamingContext, level::Int) =
+    LocallyNameless.Abs(convert(LocallyNameless.Term, t.body, Γ, level + 1))
