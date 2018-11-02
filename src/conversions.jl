@@ -44,7 +44,14 @@ convert(::Type{Named.Term}, t::DeBruijn.Abs, Γ::NamingContext) =
         Named.Abs(boundname, convert(Named.Term, t.body, Γ′))
     end
 
+
 # DeBruijn -> LocallyNameless
+"""
+    restorecontext(term::DeBruijn.Term)
+
+Construct a `NamingContext` with made-up names for the free variables in `term` (respecting their
+actual indices).
+"""
 function restorecontext(t::DeBruijn.Term; freenamehint = :free, boundnamehint = :x)
     @assert freenamehint != boundnamehint
     m = maximum(freevars(t))

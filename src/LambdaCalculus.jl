@@ -1,12 +1,5 @@
 module LambdaCalculus
 
-export AbstractTerm,
-    addprime,
-    freshname
-
-
-abstract type AbstractTerm end
-
 include("common_functions.jl")
 include("naming_context.jl")
 

@@ -14,8 +14,6 @@ export Index,
     App
 
 
-const Index = Int
-
 abstract type Term <: AbstractTerm end
 
 struct BVar <: Term

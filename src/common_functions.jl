@@ -9,6 +9,16 @@ export ≃, ≄,
     boundvartype
     
 
+export AbstractTerm,
+    Index,
+    Name
+
+
+abstract type AbstractTerm end
+
+const Index = Int
+const Name = Symbol
+
 """
     alpha_equivalent(term, term)
 

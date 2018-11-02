@@ -13,9 +13,6 @@ export App,
     Var
 
 
-const Index = Int
-
-
 """Lambda terms using [De Bruijn indexing](De Bruijn indexing), built using only the following rule:
 
     <Term> := <Number>            (variable)
