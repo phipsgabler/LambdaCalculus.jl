@@ -50,7 +50,23 @@ macro lambda(expr)
     meta_convert(expr, NamingContext(meta_freevars(expr)))
 end
 
+macro lambda(Γ, expr)
+    if Γ.head == :vect
+        meta_convert(expr, NamingContext(collect(Symbol, Γ.args)))
+    else
+        error("invalid context specification: $Γ")
+    end
+end
+
 "Convert a (well-formed) Julia expression to a `Term`."
 macro λ(expr)
     meta_convert(expr, NamingContext(meta_freevars(expr)))
+end
+
+macro λ(Γ, expr)
+    if Γ.head == :vect
+        meta_convert(expr, NamingContext(collect(Symbol, Γ.args)))
+    else
+        error("invalid context specification: $Γ")
+    end
 end

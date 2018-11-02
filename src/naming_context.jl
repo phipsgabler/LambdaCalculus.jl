@@ -50,7 +50,7 @@ struct NamingContext
 end
 
 NamingContext(freenames = Name[]; namehint = :x) =
-    NamingContext(collect(freenames), namehint, UniqueIndices(1, 0))
+    NamingContext(reverse!(collect(freenames)), namehint, UniqueIndices(1, 0))
 
 freenames(Γ::NamingContext) = Γ.freenames
 

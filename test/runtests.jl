@@ -34,7 +34,7 @@ Log.global_logger(Log.SimpleLogger(stderr, Log.Debug))
         @test l ≃ r
 
         @test freevars(D.@λ x -> y) == Set([1])
-        @test_broken (D.@λ x) ≄ (D.@lambda y)
+        @test (D.@λ [x, y] x) ≄ (D.@lambda [x, y] y)
 
         # interpolation of de Bruijn terms _is_ hygienic (inserted terms are shifted)
         t = D.@lambda x -> y
@@ -67,12 +67,12 @@ end
     debruijn_lambdas = [(D.@lambda x -> x),
                         (D.@lambda (x -> x(x))(x -> x(x))),
                         (D.@lambda x -> y -> x),
-                        (D.@lambda x -> y)]
+                        (D.@lambda [x, y, z] x -> y)]
 
     @test convert(D.Term, N.@lambda((x -> (x -> x)))) ≃ D.@lambda x -> (y -> y)
     
     for t in named_lambdas
-        @test_skip convert(N.Term, convert(D.Term, t, Γ), Γ) ≃ t
+        @test convert(N.Term, convert(D.Term, t, Γ), Γ) ≃ t
     end
 
     for t in debruijn_lambdas
@@ -81,7 +81,7 @@ end
 
     for (tn, tx) in zip(named_lambdas, debruijn_lambdas)
         @test convert(D.Term, tn, Γ) == tx
-        @test_skip convert(N.Term, tx, Γ) ≃ tn 
+        @test convert(N.Term, tx, Γ) ≃ tn 
     end
 end
 
