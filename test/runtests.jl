@@ -125,3 +125,10 @@ end
     end
 end
 
+@testset "Sampling" begin
+    for t in rand(D.BoundedTermSampler(20, 30), 100)
+        @test 20 ≤ length(t) ≤ 30
+    end
+end
+
+

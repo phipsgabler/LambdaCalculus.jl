@@ -63,5 +63,6 @@ boundvartype(::Type{<:Term}) = Var
 
 include("syntactic.jl")
 include("meta.jl")
+include("sampling.jl")
 
 end # module DeBruijn
