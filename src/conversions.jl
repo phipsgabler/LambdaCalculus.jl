@@ -2,6 +2,20 @@ import Base: convert
 
 export restorecontext
 
+
+"""
+    restorecontext(term::DeBruijn.Term)
+
+Construct a `NamingContext` with made-up names for the free variables in `term` (respecting their
+actual indices).
+"""
+function restorecontext(t::DeBruijn.Term; freenamehint = :free, boundnamehint = :x)
+    @assert freenamehint != boundnamehint
+    m = reduce(max, freevars(t), init = 0)
+    NamingContext((Symbol(freenamehint, i) for i = 1:m), namehint = boundnamehint)
+end
+
+
 # Named -> DeBruijn
 convert(::Type{DeBruijn.Term}, t::Named.Term) =
     convert(DeBruijn.Term, t, NamingContext(freevars(t)))
@@ -34,6 +48,7 @@ convert(::Type{LocallyNameless.Term}, t::Named.Abs, Γ::NamingContext) =
 
 
 # DeBruijn -> Named
+convert(::Type{Named.Term}, t::DeBruijn.Term) = convert(Named.Term, t, restorecontext(t))
 convert(::Type{Named.Term}, t::DeBruijn.Var, Γ::NamingContext) = Named.Var(Γ[t.index])
 convert(::Type{Named.Term}, t::DeBruijn.App, Γ::NamingContext) =
     let (Γₗ, Γᵣ) = split(Γ)
@@ -46,17 +61,6 @@ convert(::Type{Named.Term}, t::DeBruijn.Abs, Γ::NamingContext) =
 
 
 # DeBruijn -> LocallyNameless
-"""
-    restorecontext(term::DeBruijn.Term)
-
-Construct a `NamingContext` with made-up names for the free variables in `term` (respecting their
-actual indices).
-"""
-function restorecontext(t::DeBruijn.Term; freenamehint = :free, boundnamehint = :x)
-    @assert freenamehint != boundnamehint
-    m = maximum(freevars(t))
-    NamingContext((Symbol(freenamehint, i) for i = 1:m), namehint = boundnamehint)
-end
 
 convert(::Type{LocallyNameless.Term}, t::DeBruijn.Term) =
     convert(LocallyNameless.Term, t, restorecontext(t), 0)
