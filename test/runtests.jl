@@ -31,7 +31,7 @@ Log.global_logger(Log.SimpleLogger(stderr, Log.Debug))
         r = D.@λ (y -> y)(a)
         @test l ≃ r
 
-        @test freevars(D.@λ x -> y) == Set([2])
+        @test freevars(D.@λ x -> y) == Set([1])
         @test_broken (D.@λ x) ≄ (D.@lambda y)
 
         t = D.@lambda x -> y
