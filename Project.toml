@@ -1,7 +1,7 @@
 name = "LambdaCalculus"
 uuid = "ad466878-c6de-11e8-03ce-5d0f191b70b9"
 authors = ["Philipp Gabler <phipsgabler@users.noreply.github.com>"]
-version = "0.1.0"
+version = "0.2.0"
 
 [deps]
 Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
