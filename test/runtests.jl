@@ -69,19 +69,40 @@ end
                         (D.@lambda x -> y -> x),
                         (D.@lambda [x, y, z] x -> y)]
 
+    ln_lambdas = [(LN.@lambda x -> x),
+                  (LN.@lambda (x -> x(x))(x -> x(x))),
+                  (LN.@lambda x -> y -> x),
+                  (LN.@lambda x -> y)]
+
+    # this used to cause a shadowing problem:
     @test convert(D.Term, N.@lambda((x -> (x -> x)))) ≃ D.@lambda x -> (y -> y)
-    
+
+    # conversion back to self
     for t in named_lambdas
         @test convert(N.Term, convert(D.Term, t, Γ), Γ) ≃ t
+        @test convert(N.Term, convert(LN.Term, t, Γ), Γ) ≃ t
     end
 
     for t in debruijn_lambdas
-        @test convert(D.Term, convert(N.Term, t, Γ), Γ) == t
+        @test convert(D.Term, convert(N.Term, t, Γ), Γ) ≃ t
+        @test convert(D.Term, convert(LN.Term, t, Γ), Γ) ≃ t
     end
 
-    for (tn, tx) in zip(named_lambdas, debruijn_lambdas)
-        @test convert(D.Term, tn, Γ) == tx
-        @test convert(N.Term, tx, Γ) ≃ tn 
+    for t in ln_lambdas
+        @test convert(LN.Term, convert(D.Term, t, Γ), Γ) ≃ t
+        @test convert(LN.Term, convert(N.Term, t, Γ), Γ) ≃ t
+    end
+
+    # conversion to other formats
+    for (tn, td, tl) in zip(named_lambdas, debruijn_lambdas, ln_lambdas)
+        @test convert(D.Term, tn, Γ) ≃ td
+        @test convert(LN.Term, tn, Γ) ≃ tl
+        
+        @test convert(N.Term, td, Γ) ≃ tn
+        @test convert(LN.Term, td, Γ) ≃ tl
+
+        @test convert(N.Term, tl, Γ) ≃ tn
+        @test convert(D.Term, tl, Γ) ≃ td
     end
 end
 
