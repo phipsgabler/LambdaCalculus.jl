@@ -1,36 +1,33 @@
+using MacroTools
 import ..LambdaCalculus.LocallyNameless
 
 export @lambda, @λ
 
-function meta_convert(expr::Expr, Γ::NamingContext)
-    if expr.head == :call && length(expr.args) ≥ 1
-        # TODO: handle :* case
-        mapfoldl(e -> meta_convert(e, Γ), (e, arg) -> :(App($e, $arg)), expr.args)
-    elseif expr.head == :->
-        boundname = expr.args[1]
-        body = meta_convert(expr.args[2], pushfirst(Γ, boundname))
-        :(Abs($body))
-    elseif expr.head == :$ && length(expr.args) == 1
-        esc(expr.args[1])
-    elseif expr.head == :block
-        # Such trivial blocks are used by the parser in lambdas to add metadata.
-        # They consist of an optional LineNumberNode followed by the actual expression.
-        meta_convert(expr.args[end], Γ)
-    else
-        error("unhandled syntax: $expr")
+
+function meta_convert1(expr, Γ::NamingContext)
+    if isexpr(expr, :$)
+        @assert length(expr.args) == 1
+        return esc(expr.args[1])
+    end
+    
+    @match expr begin
+        (f_(arg1_, args__)) => mapfoldl(e -> meta_convert1(e, Γ),
+                                        (e, arg) -> :(App($e, $arg)),
+                                        [f, arg1, args...])
+        (arg_Symbol -> body_) => :(Abs($(meta_convert1(body, pushfirst(Γ, arg)))))
+        (name_Symbol) => begin
+            index = findfirst(isequal(name), Γ)
+            if index === nothing
+                :(FVar($(Meta.quot(name))))
+            else
+                :(BVar($index))
+            end
+        end
+        other_ => error("unhandled expression: $other")
     end
 end
 
-function meta_convert(name::Symbol, Γ::NamingContext)
-    index = findfirst(isequal(name), Γ)
-    if index === nothing
-        :(FVar($(Meta.quot(name))))
-    else
-        :(BVar($index))
-    end
-end
-
-meta_convert(other, Γ::NamingContext) = error("unhandled literal: $other")
+meta_convert(expr, Γ::NamingContext) = meta_convert1(MacroTools.prewalk(unblock ∘ rmlines, expr), Γ)
 
 
 "Convert a (well-formed) Julia expression to a `Term`."
